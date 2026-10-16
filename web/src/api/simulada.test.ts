@@ -97,3 +97,19 @@ describe('salvarProdutos', () => {
     expect(r.produtos.at(-1)).toMatchObject({ id: 'p_0025', nome: 'Pêssego', atualizado_em: null });
   });
 });
+
+describe('armazenamento', () => {
+  it('outra instância com a mesma chave enxerga as notas', async () => {
+    const dados = new Map<string, string>();
+    globalThis.localStorage = {
+      getItem: (k: string) => dados.get(k) ?? null,
+      setItem: (k: string, v: string) => void dados.set(k, v),
+    } as Storage;
+    const a = new ApiSimulada({ latencia: 0, chaveArmazenamento: 'teste' });
+    api = a;
+    await a.salvarNota(await notaExemplo());
+    const b = new ApiSimulada({ latencia: 0, chaveArmazenamento: 'teste' });
+    expect((await b.getNota(1)).cliente).toBe('Mercadinho São José');
+    expect((await b.salvarNota(await notaExemplo())).numero).toBe(2);
+  });
+});

@@ -14,6 +14,18 @@ export interface OpcoesSimulada {
   latencia?: number;
   /** Relógio injetável para testes. */
   agora?: () => Date;
+  /**
+   * Chave do localStorage onde guardar o estado. Sem ela, tudo some ao
+   * recarregar. Em dev ela existe para a aba de impressão achar a nota.
+   */
+  chaveArmazenamento?: string;
+}
+
+interface EstadoSimulado {
+  produtos: Produto[];
+  config: Config;
+  notas: Nota[];
+  proximoNumero: number;
 }
 
 export class ApiSimulada implements Api {
@@ -24,10 +36,13 @@ export class ApiSimulada implements Api {
   private offline = false;
   private readonly latencia: number;
   private readonly agora: () => Date;
+  private readonly chave: string | undefined;
 
   constructor(opcoes: OpcoesSimulada = {}) {
     this.latencia = opcoes.latencia ?? 800;
     this.agora = opcoes.agora ?? (() => new Date());
+    this.chave = opcoes.chaveArmazenamento;
+    this.carregar();
   }
 
   /** Simula queda de internet: toda chamada falha até desligar. */
@@ -120,6 +135,36 @@ export class ApiSimulada implements Api {
     return this.responder(() => calcularPainel(this.notas, periodo, this.agora()));
   }
 
+  private carregar(): void {
+    if (!this.chave) return;
+    try {
+      const salvo = localStorage.getItem(this.chave);
+      if (!salvo) return;
+      const estado = JSON.parse(salvo) as EstadoSimulado;
+      this.produtos = estado.produtos;
+      this.config = estado.config;
+      this.notas = estado.notas;
+      this.proximoNumero = estado.proximoNumero;
+    } catch {
+      // Estado corrompido ou storage bloqueado: começa do zero.
+    }
+  }
+
+  private persistir(): void {
+    if (!this.chave) return;
+    try {
+      const estado: EstadoSimulado = {
+        produtos: this.produtos,
+        config: this.config,
+        notas: this.notas,
+        proximoNumero: this.proximoNumero,
+      };
+      localStorage.setItem(this.chave, JSON.stringify(estado));
+    } catch {
+      // Sem storage, segue só em memória.
+    }
+  }
+
   private buscarNota(numero: number): Nota {
     const nota = this.notas.find((n) => n.numero === numero);
     if (!nota) throw new Error(`Nota ${numero} não encontrada.`);
@@ -138,7 +183,9 @@ export class ApiSimulada implements Api {
           return;
         }
         try {
-          resolve(structuredClone(fn()));
+          const resultado = structuredClone(fn());
+          this.persistir();
+          resolve(resultado);
         } catch (e) {
           reject(e instanceof Error ? e : new Error(String(e)));
         }

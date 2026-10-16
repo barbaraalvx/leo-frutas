@@ -11,7 +11,7 @@ Web app para o balcão da Léo Frutas (box 24, CEASA João Pessoa): montar **not
 - **Planilha:** Google Sheets, abas `Produtos`, `Notas`, `Itens`, `Config` (cabeçalhos exatos na seção 3 da especificação).
 - **Backend:** Google Apps Script como app da web (`doGet`), deploy com `clasp`. Fuso `America/Fortaleza`.
 - **Frontend:** React 18 + TypeScript + Vite, empacotado num único HTML (`vite-plugin-singlefile`) em `apps-script/index.html`.
-- **Testes:** Vitest (regras e API simulada); Playwright a partir da fase 2.
+- **Testes:** Vitest (regras e API simulada) e Playwright (fluxos e PDF da impressão) contra a API simulada.
 
 ## Comandos
 
@@ -19,6 +19,8 @@ Web app para o balcão da Léo Frutas (box 24, CEASA João Pessoa): montar **not
 npm run dev         # app local em http://localhost:5173 com a API simulada (latência de 800 ms)
 npm test            # Vitest, uma vez
 npm run test:watch  # Vitest em modo observação
+npm run test:e2e    # Playwright (sobe o Vite na porta 5174); PDFs em test-results/
+npm run test:tudo   # Vitest + Playwright
 npm run typecheck   # tsc sem emitir
 npm run build       # typecheck + gera apps-script/index.html (arquivo gerado, fora do git)
 ```
@@ -39,7 +41,7 @@ web/
     telas/          NovaNota, Notas, Precos, Painel
     componentes/    Menu, CartaoProduto, LinhaNota, NotaImpressa…
     estilos/        global.css (importa design-system/tokens.css)
-tests/              Playwright (fase 2)
+tests/              Playwright: nota de exemplo, Nova nota, impressão (1 e 2 páginas)
 ```
 
 ## Regras que não podem quebrar
@@ -55,10 +57,18 @@ tests/              Playwright (fase 2)
 - Telas usam o contrato `Api` e funcionam igual com a simulada e a real.
 - Contraste: texto sobre `--laranja-500` é `--tinta-900` (nunca branco); texto laranja pequeno usa `--laranja-700`. Alvo de toque ≥ 44 px.
 
+## Detalhes de implementação
+
+- **API simulada em dev** guarda o estado em `localStorage` (`leo-frutas:simulada`), para a aba de impressão achar a nota e os dados sobreviverem a recarregar. Para zerar: apagar essa chave. Em dev ela fica em `window.__apiSimulada` (os testes usam `definirOffline(true)` e `salvarNota` direto).
+- **Impressão:** `?view=nota&numero=N` renderiza só `NotaImpressa` e chama `window.print()` (pulado quando `navigator.webdriver`, ou seja, no Playwright). No Apps Script, a URL base vem de `window.LEO_FRUTAS.urlApp`, que o `doGet` precisa injetar (fase 3).
+- **CSS:** `global.css` é importado primeiro em `main.tsx`; o CSS de cada tela vem depois e pode sobrescrever. Sem `window.confirm`/`alert`: confirmações são inline.
+- **Breakpoint único de 1023 px:** abaixo dele o menu vira barra inferior e a nota vira gaveta.
+- Playwright fixado em 1.63.0 (o 1.64.1 não resolvia no registro em 16/10/2026).
+
 ## Fases (seção 8 da especificação)
 
 1. ✅ **Base:** Vite + React + TS, tokens, layout com menu, API simulada, regras em `dominio/` com Vitest.
-2. Nova nota (6.1), pré-visualização (6.2) e nota A4 (6.5) com a API simulada; Playwright com a nota de exemplo (R$ 178,40) e PDF.
+2. ✅ Nova nota (6.1, com rascunho no `localStorage`), pré-visualização (6.2) e nota A4 (6.5); Playwright com a nota de exemplo (R$ 178,40) e PDF.
 3. Apps Script + planilha: `setup()`, API, `doGet` com `?view=nota&numero=N`, `clasp push`.
 4. Preços (6.4) e Notas (6.3).
 5. Painel (6.6). A conta já existe em `dominio/painel.ts` para o servidor reaproveitar.

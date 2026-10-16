@@ -1,0 +1,178 @@
+/* Nota impressa A4 (README, "Nota impressa (A4)"; especificação 6.5).
+   Quase tudo em preto; laranja só na faixa do topo e no total. */
+
+@page {
+  size: A4;
+  margin: 15mm;
+}
+
+.folha {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 15mm;
+  background: #fff;
+  color: #000;
+  font-family: var(--fonte-ui);
+  font-size: 10.5pt;
+  line-height: 1.25;
+  /* Faixa laranja de 6px no topo; borda imprime mesmo sem "gráficos de fundo". */
+  border-top: 6px solid var(--laranja-500);
+}
+
+.folha p {
+  margin: 0;
+}
+
+.folha__cabecalho {
+  display: grid;
+  grid-template-columns: 30mm 1fr auto;
+  gap: 6mm;
+  align-items: start;
+  margin-top: 4mm;
+}
+
+.folha__logo {
+  width: 30mm;
+  height: 30mm;
+  object-fit: contain;
+}
+
+.folha__nome-loja {
+  margin: 0 0 1.5mm;
+  font-family: var(--fonte-titulo);
+  font-size: 18pt;
+  font-weight: 800;
+  color: #000;
+  letter-spacing: 0.02em;
+}
+
+.folha__numero {
+  text-align: right;
+}
+
+.folha__titulo-nota {
+  margin-bottom: 1.5mm !important;
+  font-weight: 700;
+  font-size: 12pt;
+}
+
+.folha__cancelada {
+  margin-top: 6mm !important;
+  padding: 2mm 0;
+  border: 2px solid #000;
+  text-align: center;
+  font-weight: 800;
+  font-size: 14pt;
+  letter-spacing: 0.2em;
+}
+
+.folha__cancelada span {
+  font-size: 10pt;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.folha__cliente {
+  margin-top: 6mm !important;
+}
+
+.folha__tabela {
+  width: 100%;
+  margin-top: 4mm;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.folha__tabela thead {
+  display: table-header-group; /* repete o cabeçalho em cada página */
+}
+
+.folha__tabela tr {
+  break-inside: avoid;
+}
+
+.folha__tabela th {
+  padding: 1.5mm 2mm 1.5mm 0;
+  border-bottom: 1px solid #000;
+  text-align: left;
+  font-weight: 600;
+}
+
+.folha__tabela td {
+  padding: 1.2mm 2mm 1.2mm 0;
+  border-bottom: 1px solid #D9D9D9;
+}
+
+.folha__tabela th:last-child,
+.folha__tabela td:last-child {
+  padding-right: 0;
+}
+
+.folha__col-produto {
+  width: 45%;
+}
+
+.folha__num {
+  text-align: right !important;
+  white-space: nowrap;
+}
+
+.folha__total {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10mm;
+  margin-top: 3mm;
+  margin-left: auto;
+  width: 70mm;
+  padding-top: 2mm;
+  border-top: 2px solid var(--laranja-500);
+  font-size: 16pt;
+  font-weight: 800;
+  break-inside: avoid;
+}
+
+.folha__rodape {
+  margin-top: 8mm;
+  font-size: 9.5pt;
+}
+
+@media print {
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  .folha {
+    /* As margens agora vêm do @page. */
+    width: auto;
+    min-height: 0;
+    padding: 0;
+    box-shadow: none !important;
+  }
+}
+
+/* ---- Página de impressão (?view=nota) ---- */
+
+.pagina-impressao {
+  display: flex;
+  justify-content: center;
+  min-height: 100%;
+  padding: var(--esp-6) 0;
+  background: var(--fundo-secao);
+}
+
+.pagina-impressao .folha {
+  box-shadow: 0 2px 12px rgba(27, 26, 42, 0.12);
+}
+
+.pagina-impressao__aviso {
+  padding: var(--esp-6);
+}
+
+@media print {
+  .pagina-impressao {
+    display: block;
+    padding: 0;
+    background: #fff;
+  }
+}
