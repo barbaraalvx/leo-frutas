@@ -5,13 +5,17 @@
   "type": "module",
   "scripts": {
     "dev": "vite --config web/vite.config.ts",
-    "build": "tsc --noEmit && vite build --config web/vite.config.ts",
+    "build": "npm run typecheck && npm run build:web && npm run build:servidor",
     "preview": "vite preview --config web/vite.config.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p apps-script",
     "test": "vitest run --config web/vite.config.ts",
     "test:watch": "vitest --config web/vite.config.ts",
     "test:e2e": "playwright test",
-    "test:tudo": "npm test && npm run test:e2e"
+    "test:tudo": "npm test && npm run test:e2e",
+    "build:web": "vite build --config web/vite.config.ts",
+    "build:servidor": "node scripts/build-servidor.mjs",
+    "enviar": "npm run build && clasp push --force",
+    "publicar": "node scripts/publicar.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.460.0",
@@ -19,13 +23,17 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@google/clasp": "^3.4.1",
     "@playwright/test": "1.63.0",
+    "@types/google-apps-script": "^2.0.13",
     "@types/node": "^20.19.43",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^4.7.0",
+    "esbuild": "^0.21.5",
     "typescript": "~5.6.3",
     "vite": "^5.4.21",
+    "vite-node": "^2.1.9",
     "vite-plugin-singlefile": "^2.3.3",
     "vitest": "^2.1.9"
   }

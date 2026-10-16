@@ -36,12 +36,17 @@ export interface Painel {
   topProdutos: ProdutoVendido[];
 }
 
-const FUSO = 'America/Fortaleza';
+/**
+ * João Pessoa (America/Fortaleza) é UTC−3 o ano todo, sem horário de verão
+ * desde 2000. Deslocamento fixo em vez de Intl com fuso: dá o mesmo
+ * resultado no navegador e no Apps Script, sem depender dos dados de fuso.
+ */
+const DESLOCAMENTO_MS = -3 * 60 * 60 * 1000;
 
 /** Dia local "AAAA-MM-DD" de uma data-hora. */
 export function diaLocal(data: Date | string): string {
   const d = typeof data === 'string' ? new Date(data) : data;
-  return new Intl.DateTimeFormat('en-CA', { timeZone: FUSO, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+  return new Date(d.getTime() + DESLOCAMENTO_MS).toISOString().slice(0, 10);
 }
 
 export function somarDias(dia: string, n: number): string {

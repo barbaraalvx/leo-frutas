@@ -18,11 +18,17 @@ export function estaNoAppsScript(): boolean {
   return typeof window !== 'undefined' && !!window.google?.script?.run;
 }
 
+/** O Google pode prefixar a mensagem ("Error: …", "Exception: …"); a tela mostra só o texto. */
+export function limparMensagem(mensagem: string | undefined): string {
+  const limpa = (mensagem ?? '').replace(/^(Error|Exception|ScriptError):\s*/i, '').trim();
+  return limpa || 'Erro ao falar com a planilha.';
+}
+
 function chamar<T>(funcao: keyof Api, ...args: unknown[]): Promise<T> {
   return new Promise((resolve, reject) => {
     const run = window.google!.script!.run
       .withSuccessHandler((r) => resolve(r as T))
-      .withFailureHandler((e) => reject(new Error(e?.message || 'Erro ao falar com a planilha.')));
+      .withFailureHandler((e) => reject(new Error(limparMensagem(e?.message))));
     (run[funcao] as (...a: unknown[]) => void)(...args);
   });
 }

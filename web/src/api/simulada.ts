@@ -2,11 +2,11 @@
 // e para os testes. Imita as regras do servidor (7.2): recalcula valores,
 // numera as notas em sequência e nunca apaga nada.
 
-import { calcularValor, quantidadeValida, somarCentavos } from '../dominio/calculo';
 import { normalizarBusca } from '../dominio/formatacao';
 import { calcularPainel } from '../dominio/painel';
+import { proximoIdProduto, validarAlteracaoProduto, validarItens } from '../dominio/validacao';
 import type { Config, Nota, Produto } from '../dominio/tipos';
-import { CONFIG_INICIAL, idProduto, produtosIniciais } from './dadosIniciais';
+import { CONFIG_INICIAL, produtosIniciais } from './dadosIniciais';
 import type { AlteracaoProduto, Api, FiltroNotas, NotaParaSalvar } from './tipos';
 
 export interface OpcoesSimulada {
@@ -56,20 +56,12 @@ export class ApiSimulada implements Api {
 
   salvarNota(nota: NotaParaSalvar) {
     return this.responder(() => {
-      if (nota.itens.length === 0) throw new Error('A nota não tem itens.');
-      for (const item of nota.itens) {
-        if (!quantidadeValida(item.tipo_venda, item.quantidade)) {
-          throw new Error(`Quantidade inválida em ${item.produto_nome}.`);
-        }
-        if (calcularValor(item.quantidade, item.preco_unitario) !== item.valor_calculado) {
-          throw new Error(`Valor calculado não confere em ${item.produto_nome}.`);
-        }
-      }
+      const total = validarItens(nota.itens);
       const salva: Nota = {
         numero: this.proximoNumero++,
         data_hora: this.agora().toISOString(),
-        cliente: nota.cliente.trim(),
-        total: somarCentavos(nota.itens.map((i) => i.valor_final)),
+        cliente: String(nota.cliente ?? '').trim().slice(0, 60),
+        total,
         qtd_itens: nota.itens.length,
         status: 'emitida',
         observacao: '',
@@ -112,8 +104,8 @@ export class ApiSimulada implements Api {
   salvarProdutos(alteracoes: AlteracaoProduto[]) {
     return this.responder(() => {
       const agora = this.agora().toISOString();
+      alteracoes.forEach(validarAlteracaoProduto);
       for (const alt of alteracoes) {
-        if (!alt.nome.trim()) throw new Error('Produto sem nome.');
         const existente = alt.id ? this.produtos.find((p) => p.id === alt.id) : undefined;
         if (alt.id && !existente) throw new Error(`Produto ${alt.id} não encontrado.`);
         if (existente) {
@@ -122,7 +114,7 @@ export class ApiSimulada implements Api {
         } else {
           this.produtos.push({
             ...alt,
-            id: idProduto(this.produtos.length + 1),
+            id: proximoIdProduto(this.produtos.map((p) => p.id)),
             atualizado_em: alt.preco !== null ? agora : null,
           });
         }

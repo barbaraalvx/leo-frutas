@@ -7,8 +7,11 @@ import type { Api } from './tipos';
 
 declare global {
   interface Window {
-    /** Injetado pelo doGet do Apps Script (fase 3). */
-    LEO_FRUTAS?: { urlApp: string };
+    /**
+     * Injetado pelo doGet (apps-script/Code.ts). Dentro do iframe do Google
+     * o app não enxerga o endereço nem os parâmetros da página de verdade.
+     */
+    LEO_FRUTAS?: { urlApp: string; parametros: { view: string; numero: string } };
     /** Só em dev: a API simulada, para os testes Playwright simularem falhas. */
     __apiSimulada?: ApiSimulada;
   }
@@ -22,6 +25,12 @@ function criarApi(): Api {
 }
 
 export const api: Api = criarApi();
+
+/** Parâmetros da página (?view=nota&numero=N), venham do Google ou da barra de endereço. */
+export function parametrosDaPagina(): URLSearchParams {
+  const injetados = window.LEO_FRUTAS?.parametros;
+  return injetados ? new URLSearchParams(injetados) : new URLSearchParams(location.search);
+}
 
 /**
  * Endereço da página só com a nota, para imprimir numa aba própria (6.5).

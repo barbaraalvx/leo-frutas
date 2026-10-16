@@ -15,12 +15,12 @@ export default defineConfig({
     fs: { allow: [raizRepo] },
   },
   build: {
-    // O Apps Script serve um HTML único: apps-script/index.html
-    outDir: fileURLToPath(new URL('../apps-script', import.meta.url)),
+    // O Apps Script serve um HTML único: apps-script/build/index.html
+    outDir: fileURLToPath(new URL('../apps-script/build', import.meta.url)),
     emptyOutDir: false,
   },
   test: {
-    root: raizWeb,
-    include: ['src/**/*.test.ts'],
+    root: raizRepo,
+    include: ['web/src/**/*.test.ts', 'apps-script/**/*.test.ts'],
   },
 });

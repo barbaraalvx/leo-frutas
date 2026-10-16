@@ -1,7 +1,8 @@
 node_modules/
 dist/
 # Gerado por `npm run build` (vai para o Apps Script via clasp)
-apps-script/index.html
+apps-script/build/
+# Liga o repositório ao script de uma conta Google (criado por `clasp create`)
 .clasp.json
 test-results/
 playwright-report/
