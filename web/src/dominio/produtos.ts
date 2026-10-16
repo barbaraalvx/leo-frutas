@@ -63,25 +63,32 @@ export function paraAlteracao(p: Produto): AlteracaoProduto & { id: string } {
 }
 
 /**
- * Sobe (−1) ou desce (+1) um produto na lista visível, trocando a `ordem`
- * com o vizinho. Devolve as novas ordens, ou null se já está na ponta.
+ * Arrastar e soltar (tela Preços): leva o produto da posição `de` para a
+ * posição `para` na lista visível. Os produtos visíveis reaproveitam os
+ * mesmos valores de `ordem`, redistribuídos na nova sequência, para não
+ * mexer na posição dos que estão escondidos pelo filtro. Devolve só os que
+ * mudaram de ordem.
  */
-export function moverProduto(
+export function reordenarProdutos(
   visiveis: Produto[],
-  id: string,
-  direcao: -1 | 1,
-): { id: string; ordem: number }[] | null {
-  const i = visiveis.findIndex((p) => p.id === id);
-  const j = i + direcao;
-  if (i < 0 || j < 0 || j >= visiveis.length) return null;
-  const a = visiveis[i];
-  const b = visiveis[j];
-  // Ordens iguais (digitadas à mão) não trocariam nada: desempata.
-  const ordemA = a.ordem === b.ordem ? b.ordem + direcao : b.ordem;
-  return [
-    { id: a.id, ordem: ordemA },
-    { id: b.id, ordem: a.ordem },
-  ];
+  de: number,
+  para: number,
+): { id: string; ordem: number }[] {
+  if (de === para || de < 0 || para < 0 || de >= visiveis.length || para >= visiveis.length) return [];
+  const sequencia = [...visiveis];
+  const [movido] = sequencia.splice(de, 1);
+  sequencia.splice(para, 0, movido);
+
+  // Ordens repetidas (digitadas à mão) deixariam a sequência ambígua: desempata.
+  const ordens = visiveis.map((p) => p.ordem).sort((a, b) => a - b);
+  for (let i = 1; i < ordens.length; i++) {
+    if (ordens[i] <= ordens[i - 1]) ordens[i] = ordens[i - 1] + 1;
+  }
+
+  return sequencia
+    .map((p, i) => ({ id: p.id, ordem: ordens[i], antes: p.ordem }))
+    .filter((p) => p.ordem !== p.antes)
+    .map(({ id, ordem }) => ({ id, ordem }));
 }
 
 /** Ordem de um produto novo: depois de todos. */

@@ -63,6 +63,7 @@ Não usar para dados reais.
 
 ```
 especificacao/      especificação do app
+docs/               configurar-dispositivos.md: guia para instalar o app em tablet, celular e computador
 design-system/      README, tokens.css, logo (importados pelo app, não editar sem pedido)
 apps-script/
   Code.ts           doGet (injeta window.LEO_FRUTAS), menu da planilha, exporta a API protegida
@@ -88,7 +89,7 @@ web/
     api/            contrato (tipos.ts), simulada.ts, appsScript.ts (google.script.run), index.ts escolhe
     telas/          NovaNota, Notas, Precos, Painel
     componentes/    Menu, CartaoProduto, LinhaNota, NotaImpressa, Dialogo, FormularioProduto, Interruptor,
-                    GraficoVendas (SVG próprio, sem biblioteca)…
+                    GraficoVendas (SVG próprio, sem biblioteca), useArrastarLinhas…
     estilos/        global.css (importa design-system/tokens.css)
 tests/              Playwright: nota de exemplo, Nova nota, impressão, preços, notas, painel, producao
 ```
@@ -114,7 +115,8 @@ tests/              Playwright: nota de exemplo, Nova nota, impressão, preços,
 - **Servidor:** funções públicas precisam estar em `FUNCOES_PUBLICAS` (`scripts/build-servidor.mjs`); o build falha se alguma não existir em `Code.ts`. Nunca devolver `Date` ao app (só ISO). Texto livre gravado passa por `textoSeguro` (evita virar fórmula). Datas do painel usam UTC−3 fixo (`diaLocal`), igual no navegador e no Apps Script.
 - **Planilha editável à mão:** colunas achadas pelo nome do cabeçalho; aceita "22,00", "peça", "sim". Linhas incompletas são ignoradas. O número da nota nunca repete, mesmo se `proximo_numero` for baixado à mão.
 - **CSS:** `global.css` é importado primeiro em `main.tsx` e tem o que é compartilhado (botões, campos, busca, abas, selos, diálogo, interruptor); o CSS de cada tela vem depois e pode sobrescrever. Sem `window.confirm`/`alert`: confirmações usam `Dialogo`.
-- **Produtos** vivem no `App` (carregados uma vez); a tela Preços devolve a lista nova depois de salvar e a Nova nota já vê. Na tela Preços, preço/ativo/ordem ficam pendentes até "Salvar preços"; o formulário (novo/editar) salva na hora. Sair da tela com pendências pede confirmação (`App`) e fechar a aba dispara o aviso do navegador.
+- **Produtos** vivem no `App` (carregados uma vez); a tela Preços devolve a lista nova depois de salvar e a Nova nota já vê. Na tela Preços, preço/ativo/ordem ficam pendentes até "Salvar preços"; o formulário (novo/editar) salva na hora.
+- **Ordem dos produtos = arrastar e soltar** pela alça ⋮⋮ (`useArrastarLinhas`), no lugar das setas ↑↓ da especificação (a Bárbara achou inúteis). Só a alça inicia o arrasto (`touch-action: none` nela), então rolar a lista com o dedo continua normal; perto das bordas a lista rola sozinha; pelo teclado, ↑↓ com foco na alça. `reordenarProdutos` redistribui as mesmas ordens entre os visíveis, sem invadir os escondidos pelo filtro. Sair da tela com pendências pede confirmação (`App`) e fechar a aba dispara o aviso do navegador.
 - **Cache de produtos e config** em `localStorage` (`leo-frutas:dados`): o app abre na hora com ele e atualiza em segundo plano; se a planilha não responder, segue com os preços guardados e a `FaixaConexao` avisa (também avisa quando o aparelho fica sem internet).
 - **Nota nunca duplica:** cada envio leva `id_envio` (UUID, o mesmo em todas as tentativas daquela nota; qualquer mudança na nota gera outro). O servidor lembra por 6 h no `CacheService` e devolve a nota já gravada. Por isso o cliente pode desistir depois de 45 s (`TEMPO_LIMITE_MS`) e oferecer "Tentar de novo" com segurança. A API simulada imita com `perderProximaResposta()`.
 - **Notas:** busca espera 300 ms parada; respostas fora de ordem são descartadas; 50 por página.

@@ -104,15 +104,69 @@ test('preço inválido no formulário mostra erro', async ({ page }) => {
   await expect(dialogo).toBeHidden();
 });
 
-test('subir muda a ordem na grade', async ({ page }) => {
-  await page.getByRole('button', { name: 'Subir Maçã', exact: true }).click();
-  await expect(page.locator('.tabela-precos tbody tr').first()).toContainText('Maçã');
-  await expect(salvar(page)).toHaveText('Salvar preços (2)');
+/** Arrasta a alça de um produto até o meio de outra linha, em passos (como um dedo). */
+async function arrastar(page: Page, deNome: string, ateNome: string) {
+  const alca = page.getByRole('button', { name: new RegExp(`^Mover ${deNome}\\.`) });
+  const origem = (await alca.boundingBox())!;
+  const destino = (await linha(page, ateNome).boundingBox())!;
+  await page.mouse.move(origem.x + origem.width / 2, origem.y + origem.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(origem.x + origem.width / 2, destino.y + destino.height / 2 - 4, { steps: 12 });
+  await page.waitForTimeout(100);
+  await page.mouse.up();
+}
+
+const primeiraLinha = (page: Page) => page.locator('.tabela-precos tbody tr').first();
+
+test('arrastar e soltar muda a ordem na grade da Nova nota', async ({ page }) => {
+  await page.getByRole('tab', { name: 'Frutas' }).click();
+  await arrastar(page, 'Melão', 'Laranja pêra');
+  await expect(primeiraLinha(page)).toContainText('Melão');
+  // Melão era o 9º: ele e os 8 de cima mudam de posição.
+  await expect(salvar(page)).toHaveText('Salvar preços (9)');
   await salvar(page).click();
   await expect(page.getByText('Preços salvos na planilha')).toBeVisible();
 
   await page.getByRole('button', { name: 'Nova nota' }).click();
-  await expect(page.locator('.cartao-produto').first()).toContainText('Maçã');
+  await expect(page.locator('.cartao-produto').first()).toContainText('Melão');
+  await expect(page.locator('.cartao-produto').nth(1)).toContainText('Laranja pêra');
+});
+
+test.describe('tela baixa', () => {
+  test.use({ viewport: { width: 1280, height: 520 } });
+
+  test('a lista rola sozinha para levar um produto do fim ao começo', async ({ page }) => {
+    await page.getByRole('tab', { name: 'Frutas' }).click();
+    const alca = page.getByRole('button', { name: /^Mover Ameixa\./ });
+    await alca.scrollIntoViewIfNeeded();
+    const origem = (await alca.boundingBox())!;
+    await page.mouse.move(origem.x + origem.width / 2, origem.y + origem.height / 2);
+    await page.mouse.down();
+    // Segura perto da borda de cima até a lista chegar ao começo.
+    await page.mouse.move(origem.x + origem.width / 2, 40, { steps: 10 });
+    await expect.poll(() => page.evaluate(() => document.querySelector('.conteudo')!.scrollTop)).toBe(0);
+    // As linhas abriram espaço (estão deslocadas); o cabeçalho da tabela não se mexe.
+    const cabecalho = (await page.locator('.tabela-precos thead').boundingBox())!;
+    await page.mouse.move(origem.x + origem.width / 2, cabecalho.y + cabecalho.height + 4, { steps: 6 });
+    await page.waitForTimeout(100);
+    await page.mouse.up();
+    await expect(primeiraLinha(page)).toContainText('Ameixa');
+  });
+});
+
+test('pelo teclado: setas na alça movem o produto', async ({ page }) => {
+  const alca = page.getByRole('button', { name: /^Mover Maçã\./ });
+  await alca.focus();
+  await page.keyboard.press('ArrowUp');
+  await expect(primeiraLinha(page)).toContainText('Maçã');
+  await expect(salvar(page)).toHaveText('Salvar preços (2)');
+  // O foco segue o produto: mais um ↓ devolve ao lugar e não sobra alteração.
+  await page.keyboard.press('ArrowDown');
+  await expect(salvar(page)).toBeDisabled();
+});
+
+test('não há mais setas de subir e descer', async ({ page }) => {
+  await expect(page.getByRole('button', { name: /^(Subir|Descer) / })).toHaveCount(0);
 });
 
 test('sair com alteração não salva pede confirmação', async ({ page }) => {

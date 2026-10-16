@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Plus, Search, X } from 'lucide-react';
+import { GripVertical, Plus, Search, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../api';
 import { Aviso, useAviso } from '../componentes/Aviso';
@@ -6,15 +6,16 @@ import { CampoNumerico } from '../componentes/CampoNumerico';
 import { FormularioProduto, type DadosFormulario } from '../componentes/FormularioProduto';
 import { Interruptor } from '../componentes/Interruptor';
 import { Selo } from '../componentes/Selo';
+import { useArrastarLinhas } from '../componentes/useArrastarLinhas';
 import { formatarCentavosCampo, formatarDataHora, lerDinheiro, rotuloUnidade } from '../dominio/formatacao';
 import {
   ABAS,
   aplicarPendentes,
   filtrarProdutos,
-  moverProduto,
   paraAlteracao,
   proximaOrdem,
   registrarMudanca,
+  reordenarProdutos,
   type Aba,
   type CamposEditaveis,
   type Pendentes,
@@ -39,6 +40,7 @@ export function Precos({ produtos, erroDados, aoAtualizarProdutos, aoMudarPenden
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [formulario, setFormulario] = useState<Formulario>(null);
+  const [focarAlca, setFocarAlca] = useState<string | null>(null);
   const { aviso, mostrar } = useAviso();
 
   useEffect(() => aoMudarPendencias(pendentes.size), [pendentes.size, aoMudarPendencias]);
@@ -55,9 +57,18 @@ export function Precos({ produtos, erroDados, aoAtualizarProdutos, aoMudarPenden
     if (original) setPendentes((atual) => registrarMudanca(atual, original, campos));
   }
 
-  function mover(id: string, direcao: -1 | 1) {
-    for (const { id: alvo, ordem } of moverProduto(visiveis, id, direcao) ?? []) mudar(alvo, { ordem });
+  function reordenar(de: number, para: number) {
+    for (const { id, ordem } of reordenarProdutos(visiveis, de, para)) mudar(id, { ordem });
   }
+
+  const arrasto = useArrastarLinhas(visiveis.length, reordenar);
+
+  // Pelo teclado (setas na alça), o foco acompanha o produto que mudou de lugar.
+  useEffect(() => {
+    if (!focarAlca) return;
+    document.querySelector<HTMLElement>(`[data-alca="${focarAlca}"]`)?.focus();
+    setFocarAlca(null);
+  }, [focarAlca, visiveis]);
 
   async function salvar() {
     const alteracoes = [...pendentes.keys()]
@@ -177,28 +188,57 @@ export function Precos({ produtos, erroDados, aoAtualizarProdutos, aoMudarPenden
           ) : visiveis.length === 0 ? (
             <p className="texto-fraco">Nenhum produto encontrado{busca && ` para “${busca}”`}.</p>
           ) : (
-            <table className="tabela-precos">
+            <table className={`tabela-precos${arrasto.estado ? ' tabela-precos--arrastando' : ''}`}>
               <thead>
                 <tr>
+                  <th>
+                    <span className="sr-only">Mover</span>
+                  </th>
                   <th>Produto</th>
                   <th>Categoria</th>
                   <th>Vende por</th>
                   <th className="tabela-precos__num">Preço</th>
                   <th>Atualizado em</th>
                   <th>Ativo</th>
-                  <th>
-                    <span className="sr-only">Ordem</span>
-                  </th>
                 </tr>
               </thead>
               <tbody>
                 {visiveis.map((p, i) => {
                   const pendente = pendentes.get(p.id);
+                  const arrastada = arrasto.estado?.de === i;
+                  const deslocamento = arrasto.deslocamento(i);
                   return (
                     <tr
                       key={p.id}
-                      className={`${pendente ? 'tabela-precos__alterada' : ''}${p.ativo ? '' : ' tabela-precos__inativa'}`}
+                      ref={arrasto.registrar(i)}
+                      style={deslocamento ? { transform: `translateY(${deslocamento}px)` } : undefined}
+                      className={[
+                        pendente && 'tabela-precos__alterada',
+                        !p.ativo && 'tabela-precos__inativa',
+                        arrastada && 'tabela-precos__arrastada',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
                     >
+                      <td className="tabela-precos__alca-celula">
+                        <button
+                          type="button"
+                          className="tabela-precos__alca"
+                          data-alca={p.id}
+                          aria-label={`Mover ${p.nome}. Arraste para cima ou para baixo, ou use as setas do teclado`}
+                          disabled={salvando}
+                          {...arrasto.propsAlca(i)}
+                          onKeyDown={(e) => {
+                            const para = e.key === 'ArrowUp' ? i - 1 : e.key === 'ArrowDown' ? i + 1 : null;
+                            if (para === null || para < 0 || para >= visiveis.length) return;
+                            e.preventDefault();
+                            reordenar(i, para);
+                            setFocarAlca(p.id);
+                          }}
+                        >
+                          <GripVertical size={20} aria-hidden />
+                        </button>
+                      </td>
                       <td data-rotulo="Produto">
                         <button
                           type="button"
@@ -251,26 +291,6 @@ export function Precos({ produtos, erroDados, aoAtualizarProdutos, aoMudarPenden
                           desativado={salvando}
                           aoMudar={(ativo) => mudar(p.id, { ativo })}
                         />
-                      </td>
-                      <td className="tabela-precos__ordem">
-                        <button
-                          type="button"
-                          className="botao botao--icone"
-                          aria-label={`Subir ${p.nome}`}
-                          disabled={i === 0 || salvando}
-                          onClick={() => mover(p.id, -1)}
-                        >
-                          <ArrowUp size={18} aria-hidden />
-                        </button>
-                        <button
-                          type="button"
-                          className="botao botao--icone"
-                          aria-label={`Descer ${p.nome}`}
-                          disabled={i === visiveis.length - 1 || salvando}
-                          onClick={() => mover(p.id, 1)}
-                        >
-                          <ArrowDown size={18} aria-hidden />
-                        </button>
                       </td>
                     </tr>
                   );

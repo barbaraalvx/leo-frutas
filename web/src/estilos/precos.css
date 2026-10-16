@@ -145,9 +145,70 @@
   font-weight: var(--peso-semi);
 }
 
-.tabela-precos__ordem {
-  white-space: nowrap;
-  text-align: right;
+/* ---- Arrastar e soltar ---- */
+
+.tabela-precos__alca-celula {
+  width: 44px;
+  padding-right: 0 !important;
+}
+
+/* touch-action: none só na alça: o dedo no resto da lista continua rolando. */
+.tabela-precos__alca {
+  display: grid;
+  place-items: center;
+  width: var(--alvo-toque);
+  height: var(--alvo-toque);
+  margin-left: calc(-1 * var(--esp-2));
+  padding: 0;
+  border: none;
+  border-radius: var(--raio-sm);
+  background: none;
+  color: var(--tinta-300);
+  cursor: grab;
+  touch-action: none;
+  /* Toque longo na alça não seleciona texto nem abre menu do sistema. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.tabela-precos__alca:hover:not(:disabled) {
+  background: var(--fundo-app);
+  color: var(--tinta-500);
+}
+
+.tabela-precos__alca:focus-visible {
+  outline: 2px solid var(--laranja-500);
+  outline-offset: -2px;
+  color: var(--tinta-700);
+}
+
+.tabela-precos__alca:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.tabela-precos--arrastando {
+  cursor: grabbing;
+  user-select: none;
+}
+
+/* As linhas do caminho deslizam para abrir espaço. */
+.tabela-precos--arrastando tbody tr {
+  transition: transform 0.15s ease;
+}
+
+.tabela-precos--arrastando tbody tr.tabela-precos__arrastada {
+  position: relative;
+  z-index: 3;
+  background: var(--branco);
+  box-shadow: 0 8px 24px rgba(27, 26, 42, 0.18);
+  transition: none;
+}
+
+.tabela-precos--arrastando .tabela-precos__arrastada .tabela-precos__alca {
+  color: var(--laranja-700);
+  cursor: grabbing;
 }
 
 /* Celular e tablet em pé: cada produto vira um cartão. */
@@ -165,10 +226,21 @@
 
   .tabela-precos tr {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: auto 1fr auto;
     gap: var(--esp-1) var(--esp-3);
-    padding: var(--esp-3) var(--esp-4);
+    padding: var(--esp-3) var(--esp-4) var(--esp-3) var(--esp-2);
     border-bottom: 1px solid var(--borda);
+  }
+
+  .tabela-precos__alca-celula {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    align-self: center;
+    width: auto;
+  }
+
+  .tabela-precos__alca {
+    margin-left: 0;
   }
 
   .tabela-precos td {
@@ -177,7 +249,8 @@
   }
 
   .tabela-precos td[data-rotulo='Produto'] {
-    grid-column: 1;
+    grid-column: 2;
+    grid-row: 1;
   }
 
   .tabela-precos td[data-rotulo='Categoria'],
@@ -186,25 +259,22 @@
   }
 
   .tabela-precos td[data-rotulo='Vende por'] {
-    grid-column: 2;
+    grid-column: 3;
     grid-row: 1;
     align-self: center;
+    justify-self: end;
   }
 
   .tabela-precos td[data-rotulo='Preço'] {
-    grid-column: 1;
+    grid-column: 2;
+    grid-row: 2;
     text-align: left !important;
   }
 
   .tabela-precos td[data-rotulo='Ativo'] {
-    grid-column: 2;
+    grid-column: 3;
     grid-row: 2;
     justify-self: end;
-  }
-
-  .tabela-precos__ordem {
-    grid-column: 1 / -1;
-    text-align: left;
   }
 
   .precos__busca {
