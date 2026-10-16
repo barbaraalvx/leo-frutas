@@ -28,89 +28,6 @@
   white-space: nowrap;
 }
 
-.busca {
-  position: relative;
-  flex: 0 1 360px;
-}
-
-.busca__campo {
-  width: 100%;
-  height: 40px;
-  padding: 0 var(--esp-10) 0 var(--esp-3);
-  border: 1px solid transparent;
-  border-radius: var(--raio-sm);
-  background: var(--campo);
-  color: var(--tinta-900);
-}
-
-.busca__campo::placeholder {
-  color: var(--tinta-400);
-}
-
-.busca__campo:focus {
-  outline: none;
-  background: var(--branco);
-  border-color: var(--laranja-500);
-  box-shadow: 0 0 0 3px var(--laranja-100);
-}
-
-.busca__campo::-webkit-search-cancel-button {
-  display: none;
-}
-
-.busca__icone,
-.busca__limpar {
-  position: absolute;
-  top: 50%;
-  right: var(--esp-3);
-  transform: translateY(-50%);
-  color: var(--tinta-400);
-}
-
-.busca__limpar {
-  right: 0;
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border: none;
-  background: none;
-  cursor: pointer;
-}
-
-.abas {
-  display: flex;
-  flex-shrink: 0;
-  gap: var(--esp-2);
-  padding: var(--esp-4) var(--esp-6) 0;
-  overflow-x: auto;
-}
-
-.aba {
-  height: 32px;
-  padding: 0 10px;
-  border: 1px solid transparent;
-  border-radius: var(--raio-sm);
-  background: none;
-  color: var(--tinta-700);
-  font-size: var(--texto-md);
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.aba[aria-selected='true'] {
-  background: var(--laranja-100);
-  border-color: var(--laranja-300);
-  color: var(--laranja-700);
-  font-weight: var(--peso-medio);
-}
-
-.aba:focus-visible {
-  outline: 2px solid var(--laranja-500);
-  outline-offset: 2px;
-}
-
 .grade__produtos {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--cartao-min), 1fr));
@@ -209,38 +126,6 @@
   color: var(--tinta-900);
   font-size: 12px;
   font-weight: var(--peso-forte);
-}
-
-/* ---- Selo ---- */
-
-.selo {
-  display: inline-flex;
-  align-items: center;
-  height: 22px;
-  padding: 0 var(--esp-2);
-  border: 1px solid transparent;
-  border-radius: var(--raio-pill);
-  font-size: 12px;
-  font-weight: var(--peso-semi);
-  white-space: nowrap;
-}
-
-.selo--verde {
-  background: var(--verde-50);
-  border-color: var(--verde-100);
-  color: var(--verde-700);
-}
-
-.selo--pessego {
-  background: var(--laranja-100);
-  border-color: var(--laranja-200);
-  color: var(--laranja-700);
-}
-
-.selo--ajustado {
-  background: var(--laranja-100);
-  border-color: var(--laranja-300);
-  color: var(--laranja-700);
 }
 
 /* ---- Coluna da nota ---- */

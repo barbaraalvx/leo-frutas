@@ -12,6 +12,9 @@ export default defineConfig({
   fullyParallel: true,
   // Mais workers estouram a memória nesta máquina (cada um abre um Chromium).
   workers: 2,
+  // A API simulada demora 800 ms por chamada, de propósito; com dois navegadores
+  // em paralelo, 5 s (o padrão) às vezes não basta para a primeira carga.
+  expect: { timeout: 10_000 },
   reporter: [['list']],
   use: {
     locale: 'pt-BR',

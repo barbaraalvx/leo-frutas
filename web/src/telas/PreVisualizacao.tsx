@@ -1,5 +1,5 @@
-import { ArrowLeft, Printer, Receipt } from 'lucide-react';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { ArrowLeft, Printer } from 'lucide-react';
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { urlImpressao } from '../api';
 import { NotaImpressa } from '../componentes/NotaImpressa';
 import { formatarNumeroNota } from '../dominio/formatacao';
@@ -9,11 +9,14 @@ interface Props {
   nota: Nota;
   config: Config;
   aoVoltar: () => void;
-  aoNovaNota: () => void;
+  /** "Imprimir" logo depois de gerar; "Reimprimir" na tela Notas. */
+  rotuloImprimir?: string;
+  /** Botões extras à direita (Nova nota, Cancelar nota). */
+  acoes?: ReactNode;
 }
 
-/** Pré-visualização (6.2): a folha em escala, com Imprimir, Nova nota e Voltar. */
-export function PreVisualizacao({ nota, config, aoVoltar, aoNovaNota }: Props) {
+/** Pré-visualização (6.2): a folha em escala, com Voltar, Imprimir e as ações da tela. */
+export function PreVisualizacao({ nota, config, aoVoltar, rotuloImprimir = 'Imprimir', acoes }: Props) {
   return (
     <div className="previa">
       <header className="topo previa__topo">
@@ -27,11 +30,9 @@ export function PreVisualizacao({ nota, config, aoVoltar, aoNovaNota }: Props) {
             className="botao botao--confirmar"
             onClick={() => window.open(urlImpressao(nota.numero), '_blank', 'noopener')}
           >
-            <Printer size={18} aria-hidden /> Imprimir
+            <Printer size={18} aria-hidden /> {rotuloImprimir}
           </button>
-          <button type="button" className="botao botao--principal" onClick={aoNovaNota}>
-            <Receipt size={18} aria-hidden /> Nova nota
-          </button>
+          {acoes}
         </div>
       </header>
       <FolhaEmEscala>

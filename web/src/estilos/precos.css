@@ -1,0 +1,213 @@
+/* Tela Preços (README "Gerenciar preços"; especificação 6.4). */
+
+/* O topo fica preso: "Salvar preços" precisa estar à vista no fim da lista. */
+.precos__topo {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid var(--divisor);
+  justify-content: space-between;
+  flex-wrap: wrap;
+  height: auto;
+  min-height: var(--topo-altura);
+  padding-top: var(--esp-3);
+  padding-bottom: var(--esp-3);
+}
+
+.precos__acoes {
+  display: flex;
+  gap: var(--esp-3);
+}
+
+.precos__corpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-4);
+}
+
+.precos__filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--esp-3);
+}
+
+.precos__busca {
+  flex: 0 1 320px;
+}
+
+.precos__cartao {
+  padding: 0;
+  overflow: hidden;
+}
+
+.precos__cartao > p {
+  padding: var(--esp-6);
+}
+
+.tabela-precos {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabela-precos th {
+  padding: var(--esp-3) var(--esp-4);
+  border-bottom: 1px solid var(--borda);
+  color: var(--tinta-500);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-medio);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tabela-precos td {
+  padding: var(--esp-1) var(--esp-4);
+  border-bottom: 1px solid var(--divisor);
+  vertical-align: middle;
+}
+
+.tabela-precos tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tabela-precos__num {
+  text-align: right !important;
+}
+
+.tabela-precos__alterada {
+  background: var(--laranja-100);
+}
+
+.tabela-precos__inativa .tabela-precos__nome,
+.tabela-precos__inativa .tabela-precos__categoria {
+  color: var(--tinta-400);
+}
+
+.tabela-precos__nome {
+  min-height: var(--alvo-toque);
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--tinta-900);
+  font-weight: var(--peso-semi);
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: var(--tinta-300);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.tabela-precos__nome:hover {
+  text-decoration-color: var(--laranja-500);
+}
+
+.tabela-precos__nome:focus-visible {
+  outline: 2px solid var(--laranja-500);
+  outline-offset: 2px;
+}
+
+.tabela-precos__categoria {
+  color: var(--tinta-500);
+  font-size: var(--texto-sm);
+}
+
+.tabela-precos__preco {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-1);
+}
+
+.tabela-precos__rs,
+.tabela-precos__unidade {
+  color: var(--tinta-400);
+  font-size: var(--texto-sm);
+}
+
+.tabela-precos__unidade {
+  min-width: 44px;
+  text-align: left;
+}
+
+.tabela-precos__preco .campo {
+  width: 96px;
+  font-weight: var(--peso-forte);
+}
+
+.tabela-precos__data {
+  color: var(--tinta-500);
+  font-size: var(--texto-sm);
+  white-space: nowrap;
+}
+
+.tabela-precos__nao-salvo {
+  color: var(--laranja-700);
+  font-weight: var(--peso-semi);
+}
+
+.tabela-precos__ordem {
+  white-space: nowrap;
+  text-align: right;
+}
+
+/* Celular e tablet em pé: cada produto vira um cartão. */
+@media (max-width: 760px) {
+  .tabela-precos thead {
+    display: none;
+  }
+
+  .tabela-precos,
+  .tabela-precos tbody,
+  .tabela-precos tr,
+  .tabela-precos td {
+    display: block;
+  }
+
+  .tabela-precos tr {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--esp-1) var(--esp-3);
+    padding: var(--esp-3) var(--esp-4);
+    border-bottom: 1px solid var(--borda);
+  }
+
+  .tabela-precos td {
+    padding: 0;
+    border: none;
+  }
+
+  .tabela-precos td[data-rotulo='Produto'] {
+    grid-column: 1;
+  }
+
+  .tabela-precos td[data-rotulo='Categoria'],
+  .tabela-precos td[data-rotulo='Atualizado em'] {
+    display: none;
+  }
+
+  .tabela-precos td[data-rotulo='Vende por'] {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+  }
+
+  .tabela-precos td[data-rotulo='Preço'] {
+    grid-column: 1;
+    text-align: left !important;
+  }
+
+  .tabela-precos td[data-rotulo='Ativo'] {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+  }
+
+  .tabela-precos__ordem {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+
+  .precos__busca {
+    flex: 1 1 100%;
+  }
+}

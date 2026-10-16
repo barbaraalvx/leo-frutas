@@ -1,0 +1,138 @@
+/* Tela Notas (especificação 6.3). */
+
+.notas__corpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-4);
+}
+
+.notas__filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--esp-3);
+}
+
+.notas__busca {
+  flex: 0 1 320px;
+}
+
+.notas__cartao {
+  padding: 0;
+  overflow: hidden;
+}
+
+.notas__vazio {
+  margin: 0;
+  padding: var(--esp-8) var(--esp-6);
+  text-align: center;
+}
+
+.lista-notas {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lista-notas li + li {
+  border-top: 1px solid var(--divisor);
+}
+
+.lista-notas__item {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-4);
+  width: 100%;
+  min-height: 64px;
+  padding: var(--esp-3) var(--esp-4);
+  border: none;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.lista-notas__item:hover:not(:disabled) {
+  background: var(--fundo-app);
+}
+
+.lista-notas__item:focus-visible {
+  outline: 2px solid var(--laranja-500);
+  outline-offset: -2px;
+}
+
+.lista-notas__item:disabled {
+  cursor: wait;
+}
+
+.lista-notas__numero {
+  min-width: 52px;
+  color: var(--tinta-900);
+  font-family: var(--fonte-titulo);
+  font-size: var(--texto-lg);
+  font-weight: var(--peso-forte);
+}
+
+.lista-notas__info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.lista-notas__cliente {
+  overflow: hidden;
+  color: var(--tinta-900);
+  font-weight: var(--peso-medio);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lista-notas__data {
+  color: var(--tinta-500);
+  font-size: var(--texto-sm);
+}
+
+.lista-notas__total {
+  color: var(--tinta-900);
+  font-weight: var(--peso-forte);
+  white-space: nowrap;
+}
+
+.lista-notas__seta {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  color: var(--tinta-300);
+}
+
+/* Nota cancelada fica riscada (6.3). */
+.lista-notas__item--cancelada .lista-notas__numero,
+.lista-notas__item--cancelada .lista-notas__cliente,
+.lista-notas__item--cancelada .lista-notas__total {
+  color: var(--tinta-400);
+  text-decoration: line-through;
+}
+
+.notas__mais {
+  display: flex;
+  justify-content: center;
+  padding: var(--esp-4);
+  border-top: 1px solid var(--divisor);
+}
+
+@media (max-width: 760px) {
+  .notas__busca {
+    flex: 1 1 100%;
+  }
+
+  .lista-notas__item {
+    flex-wrap: wrap;
+    gap: var(--esp-1) var(--esp-3);
+  }
+
+  .lista-notas__seta {
+    display: none;
+  }
+}

@@ -1,4 +1,4 @@
-import { Search, X } from 'lucide-react';
+import { Receipt, Search, X } from 'lucide-react';
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { api, type DadosIniciais } from '../api';
 import { lerRascunho, salvarRascunho } from '../armazenamento';
@@ -104,7 +104,16 @@ export function NovaNota({ dados, erroDados }: Props) {
     const voltar = () => setNotaGerada(null);
     return (
       <>
-        <PreVisualizacao nota={notaGerada} config={dados.config} aoVoltar={voltar} aoNovaNota={voltar} />
+        <PreVisualizacao
+          nota={notaGerada}
+          config={dados.config}
+          aoVoltar={voltar}
+          acoes={
+            <button type="button" className="botao botao--principal" onClick={voltar}>
+              <Receipt size={18} aria-hidden /> Nova nota
+            </button>
+          }
+        />
         <Aviso aviso={aviso} />
       </>
     );
