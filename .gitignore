@@ -1,0 +1,8 @@
+node_modules/
+dist/
+# Gerado por `npm run build` (vai para o Apps Script via clasp)
+apps-script/index.html
+.clasp.json
+test-results/
+playwright-report/
+*.log

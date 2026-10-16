@@ -1,0 +1,100 @@
+/* =========================================================================
+   Léo Frutas · tokens do design system
+   Paleta extraída do exemplo "Restro POS" (Behance, Prafful Kumar).
+   Valores marcados (amostrado) foram medidos em pixel na imagem do exemplo;
+   os marcados (derivado) foram ajustados para contraste AA ou para as
+   necessidades da Léo Frutas (verde, estados, impressão).
+   ========================================================================= */
+
+:root {
+  /* ---- Laranja (cor de destaque do exemplo) ---- */
+  --laranja-50:  #FFF6EC; /* amostrado: fundo do hero, meio */
+  --laranja-100: #FFF1E8; /* amostrado: fundo do item selecionado (Home / aba Lunch) */
+  --laranja-200: #FFEDDD; /* amostrado: borda suave do item selecionado */
+  --laranja-300: #FFD296; /* amostrado: borda da aba ativa */
+  --laranja-400: #F4A15D; /* amostrado: ícone ativo, brilho do laranja */
+  --laranja-500: #DD8845; /* amostrado: laranja principal (texto "Lunch", borda ativa) */
+  --laranja-700: #A9581A; /* derivado: laranja para TEXTO pequeno (AA 4.6:1 sobre laranja-100) */
+
+  /* ---- Creme / gradiente de marca (fundo do hero do exemplo) ---- */
+  --creme-100: #FEF9EF;   /* amostrado: centro claro */
+  --creme-200: #FBF1D9;   /* amostrado: canto superior */
+  --creme-400: #FEE49F;   /* amostrado: canto inferior direito (amarelo-manteiga) */
+  --gradiente-marca: radial-gradient(120% 90% at 100% 100%, #FEE49F 0%, rgba(254,228,159,0) 55%),
+                     linear-gradient(160deg, #FBF1D9 0%, #FFF6EC 45%, #FFF4EB 100%);
+
+  /* ---- Verde (derivado das folhas nas fotos do exemplo; pedido na relação de produtos) ---- */
+  --verde-50:  #EEF5E8;   /* derivado: fundo de selo/aviso positivo */
+  --verde-100: #DCEBD0;   /* derivado: borda de selo positivo */
+  --verde-500: #5B7A24;   /* amostrado (foto): verde-folha, para ícones e gráficos */
+  --verde-700: #2F6B3A;   /* derivado: verde para texto e botões (6.4:1 sobre branco) */
+  --verde-900: #1F4A2C;   /* amostrado (foto): verde-espinafre escuro */
+
+  /* ---- Tinta (textos) ---- */
+  --tinta-900: #1B1A2A;   /* amostrado: logo "Restro POS", títulos de tela */
+  --tinta-marrom: #25160E;/* amostrado: título grande do hero (preto quente) */
+  --tinta-700: #414246;   /* amostrado: texto das abas e nomes */
+  --tinta-500: #646368;   /* amostrado: texto corrido dos parágrafos (5.9:1) */
+  --tinta-400: #76767C;   /* derivado: legenda/rótulo mínimo com contraste AA */
+  --tinta-300: #ADADAD;   /* amostrado: ícones e rótulos inativos do menu (só ícone/decorativo) */
+
+  /* ---- Superfícies e linhas ---- */
+  --branco:      #FFFFFF; /* amostrado: cartões, menu lateral, barra do topo */
+  --fundo-app:   #F5F5F5; /* amostrado: área de conteúdo atrás dos cartões */
+  --fundo-secao: #EFEFEF; /* amostrado: seção "Brainstorming" */
+  --campo:       #ECEEF0; /* amostrado: campo de busca */
+  --borda:       #EAEAEA; /* derivado: borda de cartão e tabela */
+  --divisor:     #F2F2F2; /* amostrado: linhas finas entre áreas */
+
+  /* ---- Estados (derivados, fora do acento) ---- */
+  --sucesso: var(--verde-700);
+  --aviso:   #9A6A00;
+  --erro:    #B42318;
+  --erro-50: #FDECEA;
+
+  /* ---- Tipografia ---- */
+  --fonte-titulo: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+  --fonte-ui:     "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --texto-xs:  11px;  /* rótulo do menu lateral */
+  --texto-sm:  13px;  /* legendas, unidade, cabeçalho de tabela */
+  --texto-md:  15px;  /* base da interface (nome do produto, abas) */
+  --texto-lg:  18px;  /* total parcial, título de cartão */
+  --texto-xl:  24px;  /* título de tela, nome da marca */
+  --texto-2xl: 32px;  /* total da nota, números do painel */
+  --texto-3xl: 48px;  /* título de destaque (hero) */
+
+  --peso-normal: 400;
+  --peso-medio: 500;
+  --peso-semi: 600;
+  --peso-forte: 700;
+  --peso-extra: 800;
+
+  /* ---- Espaçamento (grade de 4px) ---- */
+  --esp-1: 4px;
+  --esp-2: 8px;
+  --esp-3: 12px;
+  --esp-4: 16px;
+  --esp-5: 20px;
+  --esp-6: 24px;
+  --esp-8: 32px;
+  --esp-10: 40px;
+  --esp-12: 48px;
+
+  /* ---- Raios ---- */
+  --raio-sm: 6px;   /* abas, campos, botão do menu (medido ~6px) */
+  --raio-md: 8px;   /* cartões de produto */
+  --raio-lg: 16px;  /* contêiner do app e painéis grandes */
+  --raio-pill: 999px; /* selos de unidade */
+
+  /* ---- Sombras (o exemplo quase não usa sombra: separa por cor de fundo) ---- */
+  --sombra-cartao: 0 1px 2px rgba(27, 26, 42, 0.04);
+  --sombra-app:    0 12px 40px rgba(169, 88, 26, 0.10);
+
+  /* ---- Medidas de layout ---- */
+  --menu-largura: 88px;
+  --topo-altura: 72px;
+  --nota-largura: 380px;
+  --cartao-min: 150px;
+  --alvo-toque: 44px;
+}

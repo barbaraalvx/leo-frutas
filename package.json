@@ -1,0 +1,29 @@
+{
+  "name": "leo-frutas",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --config web/vite.config.ts",
+    "build": "tsc --noEmit && vite build --config web/vite.config.ts",
+    "preview": "vite preview --config web/vite.config.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --config web/vite.config.ts",
+    "test:watch": "vitest --config web/vite.config.ts"
+  },
+  "dependencies": {
+    "lucide-react": "^0.460.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "typescript": "~5.6.3",
+    "vite": "^5.4.21",
+    "vite-plugin-singlefile": "^2.3.3",
+    "vitest": "^2.1.9"
+  }
+}
