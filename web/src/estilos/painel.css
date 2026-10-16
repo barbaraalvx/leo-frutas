@@ -6,10 +6,10 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--esp-3);
+  height: auto; /* no celular, título e abas quebram em duas linhas */
   min-height: var(--topo-altura);
   padding: var(--esp-3) var(--esp-6);
-  /* O README permite o gradiente da marca no topo do painel. */
-  background: var(--gradiente-marca);
+  background: var(--topo-fundo);
 }
 
 .painel__corpo {

@@ -1,5 +1,22 @@
 @import '../../../design-system/tokens.css';
 
+/* ---- Cores do menu e do topo ----
+   Escolhidas pela Bárbara em 16/10/2026 (fora do README, que tinha menu e
+   topo brancos): menu verde-folha escuro com item ativo laranja, topo das
+   telas laranja sólido. Só o topo da coluna da nota mantém o gradiente. */
+:root {
+  --menu-fundo: var(--verde-900);
+  --menu-borda: var(--verde-900);
+  --menu-item: var(--verde-100); /* ~8:1 sobre verde-900 */
+  --menu-item-hover: var(--branco);
+  --menu-hover-fundo: rgba(255, 255, 255, 0.08);
+  --menu-ativo-fundo: var(--laranja-500);
+  --menu-ativo-borda: var(--laranja-500);
+  --menu-ativo-texto: var(--tinta-900); /* 6,3:1 sobre laranja-500 */
+  --topo-fundo: var(--laranja-500);
+  --topo-texto: var(--tinta-900); /* 6,3:1 sobre laranja-500 */
+}
+
 *,
 *::before,
 *::after {
@@ -60,8 +77,8 @@ h3 {
   align-items: center;
   gap: var(--esp-3);
   padding: var(--esp-4) 0;
-  background: var(--branco);
-  border-right: 1px solid var(--divisor);
+  background: var(--menu-fundo);
+  border-right: 1px solid var(--menu-borda);
 }
 
 .menu__logo {
@@ -82,20 +99,22 @@ h3 {
   border: 1.5px solid transparent;
   border-radius: var(--raio-sm);
   background: none;
-  color: var(--tinta-300);
+  color: var(--menu-item);
   font-size: var(--texto-xs);
   font-weight: var(--peso-medio);
   cursor: pointer;
 }
 
 .menu__item:hover {
-  color: var(--tinta-400);
+  background: var(--menu-hover-fundo);
+  color: var(--menu-item-hover);
 }
 
 .menu__item[aria-current='page'] {
-  background: var(--laranja-100);
-  border-color: var(--laranja-500);
-  color: var(--laranja-700);
+  background: var(--menu-ativo-fundo);
+  border-color: var(--menu-ativo-borda);
+  color: var(--menu-ativo-texto);
+  font-weight: var(--peso-semi);
 }
 
 .menu__item:focus-visible {
@@ -111,10 +130,40 @@ h3 {
   gap: var(--esp-4);
   height: var(--topo-altura);
   padding: 0 var(--esp-6);
+  background: var(--topo-fundo);
+}
+
+/* Sobre o laranja do topo: busca branca, abas e foco em tinta escura e o
+   botão principal escuro (laranja sobre laranja sumiria). */
+.topo .busca__campo {
   background: var(--branco);
 }
 
+.topo .busca__campo:focus {
+  border-color: var(--tinta-900);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.6);
+}
+
+.topo .aba {
+  color: var(--topo-texto);
+}
+
+.topo .botao:focus-visible,
+.topo .aba:focus-visible {
+  outline-color: var(--tinta-900);
+}
+
+.topo .botao--principal {
+  background: var(--tinta-900);
+  color: var(--branco);
+}
+
+.topo .botao--principal:not(:disabled):hover {
+  background: var(--tinta-700);
+}
+
 .topo__titulo {
+  color: var(--topo-texto);
   font-family: var(--fonte-titulo);
   font-size: var(--texto-xl);
   font-weight: var(--peso-forte);
@@ -162,7 +211,7 @@ h3 {
     justify-content: space-around;
     padding: var(--esp-1) var(--esp-2) calc(var(--esp-1) + env(safe-area-inset-bottom));
     border-right: none;
-    border-top: 1px solid var(--divisor);
+    border-top: 1px solid var(--menu-borda);
   }
 
   .menu__logo {

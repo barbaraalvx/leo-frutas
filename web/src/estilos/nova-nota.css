@@ -146,6 +146,8 @@
   flex-shrink: 0;
   height: var(--topo-altura);
   padding: 0 var(--esp-5);
+  /* Só aqui o topo mantém o gradiente da marca (pedido da Bárbara). */
+  background: var(--gradiente-marca);
 }
 
 .nota__titulo {

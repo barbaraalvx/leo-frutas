@@ -46,7 +46,7 @@ export function Painel() {
 
   return (
     <div className="painel">
-      <header className="painel__topo">
+      <header className="topo painel__topo">
         <h1 className="topo__titulo">Painel</h1>
         <div className="abas abas--sem-recuo" role="tablist" aria-label="Período">
           {PERIODOS.map((p) => (
