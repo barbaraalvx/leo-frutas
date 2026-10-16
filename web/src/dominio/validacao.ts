@@ -41,6 +41,11 @@ export function validarAlteracaoProduto(alt: AlteracaoProduto): void {
   if (!Number.isFinite(alt.ordem)) throw new Error(`Ordem inválida em ${nome}.`);
 }
 
+/** id_envio aceito: letras, números, - e _, de 8 a 64 caracteres (um UUID serve). */
+export function idEnvioValido(id: unknown): id is string {
+  return typeof id === 'string' && /^[\w-]{8,64}$/.test(id);
+}
+
 /** Próximo id livre: p_0025 depois de p_0024, mesmo com buracos ou ids à mão. */
 export function proximoIdProduto(ids: string[]): string {
   const maior = ids.reduce((m, id) => {

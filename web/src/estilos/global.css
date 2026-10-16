@@ -722,3 +722,30 @@ h3 {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ---- Faixa de conexão (sem internet / planilha sem resposta) ---- */
+
+.faixa-conexao {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-3);
+  padding: var(--esp-2) var(--esp-6);
+  background: var(--tinta-900);
+  color: var(--branco);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-medio);
+}
+
+.faixa-conexao__texto {
+  flex: 1;
+}
+
+.faixa-conexao__botao {
+  min-height: 36px;
+}
+
+@media (max-width: 1023px) {
+  .faixa-conexao {
+    padding: var(--esp-2) var(--esp-4);
+  }
+}

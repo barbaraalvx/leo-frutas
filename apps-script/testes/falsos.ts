@@ -164,6 +164,15 @@ class SaidaHtmlFalsa {
     this.metas[nome] = valor;
     return this;
   }
+  icone = '';
+  setFaviconUrl(url: string) {
+    // Como o Google: endereço que não é imagem pública é recusado.
+    if (!url.endsWith('.png') && !url.includes('googleusercontent.com')) {
+      throw new Error('Unexpected error while getting the method or property setFaviconUrl.');
+    }
+    this.icone = url;
+    return this;
+  }
 }
 
 export interface OpcoesGoogleFalso {
@@ -186,6 +195,7 @@ export function criarGoogleFalso(opcoes: OpcoesGoogleFalso = {}) {
     tryLock: espiao((_ms: number) => !opcoes.travaOcupada),
     releaseLock: espiao(() => {}),
   };
+  const cache = new Map<string, string>();
   const globais = {
     SpreadsheetApp: {
       getActiveSpreadsheet: () => {
@@ -197,6 +207,12 @@ export function criarGoogleFalso(opcoes: OpcoesGoogleFalso = {}) {
     },
     Session: { getActiveUser: () => ({ getEmail: () => opcoes.email ?? 'leo@gmail.com' }) },
     LockService: { getScriptLock: () => trava },
+    CacheService: {
+      getScriptCache: () => ({
+        get: (chave: string) => cache.get(chave) ?? null,
+        put: (chave: string, valor: string) => void cache.set(chave, valor),
+      }),
+    },
     ScriptApp: { getService: () => ({ getUrl: () => opcoes.urlApp ?? URL_APP }) },
     HtmlService: {
       createHtmlOutputFromFile: () => new SaidaHtmlFalsa(opcoes.html ?? HTML_APP),

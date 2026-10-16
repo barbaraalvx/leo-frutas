@@ -7,3 +7,5 @@ apps-script/build/
 test-results/
 playwright-report/
 *.log
+# Gerado por `npm run instrucoes` (depende do endereço do app)
+instrucoes/

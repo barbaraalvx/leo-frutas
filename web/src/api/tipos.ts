@@ -12,6 +12,12 @@ export interface DadosIniciais {
 export interface NotaParaSalvar {
   cliente: string;
   itens: ItemNota[];
+  /**
+   * Identifica este envio. Se a internet cair depois que o servidor gravou
+   * e o app tentar de novo, o servidor devolve a mesma nota em vez de
+   * criar outra.
+   */
+  id_envio?: string;
 }
 
 export interface NotaSalva {

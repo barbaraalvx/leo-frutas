@@ -4,10 +4,10 @@
 
 import { normalizarBusca } from '../dominio/formatacao';
 import { calcularPainel } from '../dominio/painel';
-import { proximoIdProduto, validarAlteracaoProduto, validarItens } from '../dominio/validacao';
+import { idEnvioValido, proximoIdProduto, validarAlteracaoProduto, validarItens } from '../dominio/validacao';
 import type { Config, Nota, Produto } from '../dominio/tipos';
 import { CONFIG_INICIAL, produtosIniciais } from './dadosIniciais';
-import type { AlteracaoProduto, Api, FiltroNotas, NotaParaSalvar } from './tipos';
+import type { AlteracaoProduto, Api, FiltroNotas, NotaParaSalvar, NotaSalva } from './tipos';
 
 export interface OpcoesSimulada {
   /** ms por chamada; 800 imita o Apps Script. */
@@ -33,7 +33,10 @@ export class ApiSimulada implements Api {
   private config: Config = { ...CONFIG_INICIAL };
   private notas: Nota[] = [];
   private proximoNumero = 1;
+  /** id_envio → nota já salva (o servidor guarda por 6 h no CacheService). */
+  private envios = new Map<string, NotaSalva>();
   private offline = false;
+  private perderResposta = false;
   private readonly latencia: number;
   private readonly agora: () => Date;
   private readonly chave: string | undefined;
@@ -50,12 +53,22 @@ export class ApiSimulada implements Api {
     this.offline = offline;
   }
 
+  /**
+   * Simula a pior queda: o próximo salvarNota grava, mas a resposta não
+   * chega ao app (a internet caiu no caminho de volta).
+   */
+  perderProximaResposta(): void {
+    this.perderResposta = true;
+  }
+
   getDadosIniciais() {
     return this.responder(() => ({ produtos: this.produtos, config: this.config }));
   }
 
   salvarNota(nota: NotaParaSalvar) {
     return this.responder(() => {
+      const repetido = idEnvioValido(nota.id_envio) ? this.envios.get(nota.id_envio) : undefined;
+      if (repetido) return repetido;
       const total = validarItens(nota.itens);
       const salva: Nota = {
         numero: this.proximoNumero++,
@@ -68,7 +81,14 @@ export class ApiSimulada implements Api {
         itens: nota.itens,
       };
       this.notas.push(salva);
-      return { numero: salva.numero, data_hora: salva.data_hora, total: salva.total };
+      const resposta = { numero: salva.numero, data_hora: salva.data_hora, total: salva.total };
+      if (idEnvioValido(nota.id_envio)) this.envios.set(nota.id_envio, resposta);
+      if (this.perderResposta) {
+        this.perderResposta = false;
+        this.persistir();
+        throw new Error('Sem conexão com a planilha. Confira a internet e tente de novo.');
+      }
+      return resposta;
     });
   }
 

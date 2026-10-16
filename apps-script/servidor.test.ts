@@ -11,6 +11,7 @@ import {
   salvarProdutos,
   setup,
 } from './Code';
+import { URL_ICONE_PADRAO } from './setup';
 import { AbaFalsa, criarGoogleFalso, URL_APP, type PlanilhaFalsa } from './testes/falsos';
 
 function instalarGoogleFalso(opcoes: { travaOcupada?: boolean; semAcesso?: boolean; email?: string } = {}) {
@@ -77,7 +78,7 @@ describe('setup', () => {
   it('rodar de novo não duplica nada', () => {
     expect(setup()).toBe('A planilha já estava pronta. Nada mudou.');
     expect(ss.aba('Produtos').objetos()).toHaveLength(24);
-    expect(ss.aba('Config').objetos()).toHaveLength(7);
+    expect(ss.aba('Config').objetos()).toHaveLength(8);
   });
 
   it('acrescenta coluna que falta no fim, sem mexer nas outras', () => {
@@ -306,5 +307,51 @@ describe('acesso pela conta de quem abre', () => {
 
   it('outros erros passam como estão', () => {
     expect(() => getNota(42)).toThrow('Nota 42 não encontrada.');
+  });
+});
+
+describe('reenvio da mesma nota (id_envio)', () => {
+  it('o mesmo envio devolve a nota já gravada, sem duplicar', () => {
+    const nota = { cliente: 'Dona Maria', itens: [melancia], id_envio: 'a1b2c3d4-e5f6-4711-8000-000000000001' };
+    const primeira = salvarNota(nota);
+    vi.setSystemTime(new Date(AGORA.getTime() + 60_000));
+    const segunda = salvarNota(nota);
+    expect(segunda).toEqual(primeira);
+    expect(ss.aba('Notas').objetos()).toHaveLength(1);
+    expect(ss.aba('Itens').objetos()).toHaveLength(1);
+    expect(config('proximo_numero')).toBe(2);
+  });
+
+  it('outro envio vira outra nota; id inválido é ignorado', () => {
+    salvarNota({ cliente: '', itens: [melancia], id_envio: 'envio-0000-0001' });
+    expect(salvarNota({ cliente: '', itens: [melancia], id_envio: 'envio-0000-0002' }).numero).toBe(2);
+    expect(salvarNota({ cliente: '', itens: [melancia], id_envio: 'x' }).numero).toBe(3);
+    expect(salvarNota({ cliente: '', itens: [melancia], id_envio: 'x' }).numero).toBe(4);
+  });
+});
+
+describe('ícone (url_icone na Config)', () => {
+  const abrir = () => doGet({ parameter: {} } as never) as unknown as { icone: string; getContent(): string };
+  const definir = (url: string) => {
+    ss.aba('Config').linhas.find((l) => l[0] === 'url_icone')![1] = url;
+  };
+
+  it('setup já grava o ícone padrão, e o app usa', () => {
+    expect(ss.aba('Config').objetos().find((c) => c.chave === 'url_icone')?.valor).toBe(URL_ICONE_PADRAO);
+    expect(abrir().icone).toBe(URL_ICONE_PADRAO);
+  });
+
+  it('dá para trocar ou apagar na planilha', () => {
+    definir('https://lh3.googleusercontent.com/d/OUTRO');
+    expect(abrir().icone).toBe('https://lh3.googleusercontent.com/d/OUTRO');
+    definir('');
+    expect(abrir().icone).toBe('');
+  });
+
+  it('endereço recusado pelo Google não derruba o app', () => {
+    definir('https://exemplo.com/pagina');
+    const saida = abrir();
+    expect(saida.icone).toBe('');
+    expect(saida.getContent()).toContain('LEO_FRUTAS');
   });
 });

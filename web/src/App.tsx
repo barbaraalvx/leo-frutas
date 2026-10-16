@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api, type DadosIniciais } from './api';
+import { guardarDados, lerDadosGuardados } from './armazenamento';
 import { Dialogo } from './componentes/Dialogo';
+import { FaixaConexao } from './componentes/FaixaConexao';
 import { Menu, type IdTela } from './componentes/Menu';
 import type { Produto } from './dominio/tipos';
 import { Notas } from './telas/Notas';
@@ -10,15 +12,32 @@ import { Precos } from './telas/Precos';
 
 export function App() {
   const [tela, setTela] = useState<IdTela>('nova-nota');
-  const [dados, setDados] = useState<DadosIniciais | null>(null);
+  // Abre na hora com os dados guardados; a planilha atualiza em seguida.
+  const [guardados] = useState(lerDadosGuardados);
+  const [dados, setDados] = useState<DadosIniciais | null>(guardados?.dados ?? null);
   const [erroDados, setErroDados] = useState<string | null>(null);
+  const [usandoGuardadosDe, setUsandoGuardadosDe] = useState<string | null>(null);
   // Preços com alteração não salva: sair da tela pede confirmação (6.4).
   const [pendenciasPrecos, setPendenciasPrecos] = useState(0);
   const [destinoPendente, setDestinoPendente] = useState<IdTela | null>(null);
 
-  useEffect(() => {
-    api.getDadosIniciais().then(setDados, (e: Error) => setErroDados(e.message));
-  }, []);
+  const carregarDados = useCallback(() => {
+    setErroDados(null);
+    api.getDadosIniciais().then(
+      (novos) => {
+        setDados(novos);
+        setUsandoGuardadosDe(null);
+        guardarDados(novos);
+      },
+      (e: Error) => {
+        // Com dados guardados o app segue funcionando; a faixa avisa.
+        if (guardados) setUsandoGuardadosDe(guardados.salvoEm);
+        else setErroDados(e.message);
+      },
+    );
+  }, [guardados]);
+
+  useEffect(carregarDados, [carregarDados]);
 
   // Fechar a aba ou recarregar com preços não salvos: o navegador pergunta.
   useEffect(() => {
@@ -28,10 +47,14 @@ export function App() {
     return () => window.removeEventListener('beforeunload', avisar);
   }, [pendenciasPrecos]);
 
-  const atualizarProdutos = useCallback(
-    (produtos: Produto[]) => setDados((d) => (d ? { ...d, produtos } : d)),
-    [],
-  );
+  const atualizarProdutos = useCallback((produtos: Produto[]) => {
+    setDados((d) => {
+      if (!d) return d;
+      const novos = { ...d, produtos };
+      guardarDados(novos);
+      return novos;
+    });
+  }, []);
 
   function escolherTela(destino: IdTela) {
     if (tela === 'precos' && destino !== 'precos' && pendenciasPrecos > 0) setDestinoPendente(destino);
@@ -42,6 +65,7 @@ export function App() {
     <div className="app">
       <Menu ativa={tela} aoEscolher={escolherTela} />
       <main className="conteudo">
+        <FaixaConexao usandoGuardadosDe={usandoGuardadosDe} aoTentarDeNovo={carregarDados} />
         {tela === 'nova-nota' && <NovaNota dados={dados} erroDados={erroDados} />}
         {tela === 'notas' && <Notas config={dados?.config ?? null} />}
         {tela === 'precos' && (

@@ -20,6 +20,12 @@ interface Props {
 
 type Envio = { estado: 'ocioso' } | { estado: 'salvando' } | { estado: 'erro'; mensagem: string };
 
+function novoIdEnvio(): string {
+  return typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+}
+
 /** Abaixo disso a nota vira gaveta (README, "Tablet em pé / celular"). */
 const TELA_ESTREITA = '(max-width: 1023px)';
 
@@ -35,12 +41,17 @@ export function NovaNota({ dados, erroDados }: Props) {
   const { aviso, mostrar } = useAviso();
   const refLinhas = useRef<HTMLUListElement>(null);
   const qtdLinhasAntes = useRef(nota.linhas.length);
+  // Mesmo id em todas as tentativas desta nota; qualquer mudança gera outro.
+  const idEnvio = useRef<string | null>(null);
 
   const salvando = envio.estado === 'salvando';
   const total = totalNota(nota);
   const pronta = podeGerar(nota);
 
-  useEffect(() => salvarRascunho(nota), [nota]);
+  useEffect(() => {
+    salvarRascunho(nota);
+    idEnvio.current = null;
+  }, [nota]);
 
   // Linha nova entra embaixo: rola para ela aparecer.
   useEffect(() => {
@@ -77,9 +88,10 @@ export function NovaNota({ dados, erroDados }: Props) {
     if (!pronta || salvando) return;
     const itens = paraItens(nota);
     const cliente = nota.cliente.trim();
+    idEnvio.current ??= novoIdEnvio();
     setEnvio({ estado: 'salvando' });
     try {
-      const r = await api.salvarNota({ cliente, itens });
+      const r = await api.salvarNota({ cliente, itens, id_envio: idEnvio.current });
       setNotaGerada({
         numero: r.numero,
         data_hora: r.data_hora,

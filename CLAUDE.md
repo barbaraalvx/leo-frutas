@@ -26,6 +26,8 @@ npm run typecheck   # tsc do app e do servidor (apps-script/tsconfig.json)
 npm run build       # typecheck + build:web + build:servidor → apps-script/build/
 npm run enviar      # build + clasp push --force (atualiza o código; a URL /dev já reflete)
 npm run publicar    # enviar + atualiza a implantação do app da web (mesma URL /exec de sempre)
+npm run instrucoes -- <URL /exec>   # folha A4 do balcão com QR code → instrucoes/balcao.pdf (fora do git)
+npm run icones      # regenera icones/icone-192.png e icone-512.png a partir da logo
 ```
 
 `npx vite-node scripts/servidor-local.ts` (depois de `npm run build`) sobe o build de produção em http://localhost:5175 com a planilha em memória; `GET /__planilha` mostra o que foi gravado.
@@ -53,6 +55,8 @@ Não usar para dados reais.
 
 **Primeira vez numa máquina nova:** ativar a "API do Google Apps Script" em https://script.google.com/home/usersettings e `npx clasp login`. Autorizar o script na primeira execução ("app não verificado" → Avançado → acessar).
 
+**Ícone da aba e da tela inicial:** no app publicado, a aba é da página do Google em volta do iframe, e o Apps Script só aceita ícone por endereço público (`setFaviconUrl`). `icones/icone-512.png` está no Drive de p4rkj13un@gmail.com, público pelo link, e `setup()` grava esse endereço (`URL_ICONE_PADRAO`) na chave `url_icone` da Config. Dá para trocar ou apagar na planilha; vazio ou recusado = app abre sem ícone. Fora do Google (dev, impressão direta), o ícone de 64 px vai embutido no HTML (`main.tsx`). **Atalho na tela inicial ainda não testado num aparelho de verdade.**
+
 **Cuidado conhecido do Apps Script:** com várias contas Google logadas no mesmo navegador, o app pode abrir com a conta errada. Nos aparelhos do balcão, deixar só a conta de quem usa.
 
 ## Estrutura
@@ -68,8 +72,11 @@ apps-script/
   setup.ts          cria abas/cabeçalhos/formatos e dados iniciais (idempotente)
   testes/falsos.ts  SpreadsheetApp/LockService/HtmlService falsos (Vitest e servidor local)
   build/            gerado: o que o clasp envia
+icones/             ícones da tela inicial (gerados por scripts/gerar-icones.mjs)
 scripts/
   build-servidor.mjs  esbuild → Code.js + funções de topo para o Apps Script
+  instrucoes.mjs      folha A4 do balcão com QR code
+  gerar-icones.mjs    ícones a partir da logo
   publicar.mjs        enviar + reaproveita a implantação existente
   servidor-local.ts   "Apps Script" local para testar o build de produção
 web/
@@ -108,6 +115,8 @@ tests/              Playwright: nota de exemplo, Nova nota, impressão, preços,
 - **Planilha editável à mão:** colunas achadas pelo nome do cabeçalho; aceita "22,00", "peça", "sim". Linhas incompletas são ignoradas. O número da nota nunca repete, mesmo se `proximo_numero` for baixado à mão.
 - **CSS:** `global.css` é importado primeiro em `main.tsx` e tem o que é compartilhado (botões, campos, busca, abas, selos, diálogo, interruptor); o CSS de cada tela vem depois e pode sobrescrever. Sem `window.confirm`/`alert`: confirmações usam `Dialogo`.
 - **Produtos** vivem no `App` (carregados uma vez); a tela Preços devolve a lista nova depois de salvar e a Nova nota já vê. Na tela Preços, preço/ativo/ordem ficam pendentes até "Salvar preços"; o formulário (novo/editar) salva na hora. Sair da tela com pendências pede confirmação (`App`) e fechar a aba dispara o aviso do navegador.
+- **Cache de produtos e config** em `localStorage` (`leo-frutas:dados`): o app abre na hora com ele e atualiza em segundo plano; se a planilha não responder, segue com os preços guardados e a `FaixaConexao` avisa (também avisa quando o aparelho fica sem internet).
+- **Nota nunca duplica:** cada envio leva `id_envio` (UUID, o mesmo em todas as tentativas daquela nota; qualquer mudança na nota gera outro). O servidor lembra por 6 h no `CacheService` e devolve a nota já gravada. Por isso o cliente pode desistir depois de 45 s (`TEMPO_LIMITE_MS`) e oferecer "Tentar de novo" com segurança. A API simulada imita com `perderProximaResposta()`.
 - **Notas:** busca espera 300 ms parada; respostas fora de ordem são descartadas; 50 por página.
 - **Painel:** números vêm prontos de `getPainel` (servidor usa `calcularPainel`). Barras em `--laranja-500`, hover `--laranja-400` (o README pede `--laranja-400` nas barras, mas ele reprova no validador de paleta: claro demais, 2,0:1 sobre branco). Dias fora do período em `--tinta-300` como contexto, com legenda. Valor direto só sobre "hoje" e só se couber (faixa ≥ 56 px); todos os valores na dica (hover/foco) e em "Ver em tabela". Números grandes sem `tabular-nums` e sem quebrar linha.
 - **Breakpoint único de 1023 px:** abaixo dele o menu vira barra inferior e a nota vira gaveta.
@@ -122,6 +131,6 @@ tests/              Playwright: nota de exemplo, Nova nota, impressão, preços,
 3. ✅ Apps Script + planilha: `setup()`, API, `doGet` com `?view=nota&numero=N`, `npm run publicar`. Publicado e testado pela Bárbara na planilha de teste. **Falta:** mudar para a planilha do Léo (ver "Acesso e publicação").
 4. ✅ Preços (6.4) e Notas (6.3), com cancelamento e reimpressão.
 5. ✅ Painel (6.6): indicadores com variação, gráfico de vendas por dia, top 10.
-6. Acabamento: rascunho e cache no `localStorage`, erros, ícone, instruções de balcão.
+6. ✅ Acabamento: rascunho (fase 2) e cache no `localStorage`, faixa de conexão, nota sem duplicar, tempo limite, ícone, folha de instruções do balcão. **Falta:** testar ícone e impressão no tablet e na impressora da loja, e gerar a folha com a URL da planilha do Léo.
 
 Cada fase termina com `npm test` e `npm run typecheck` passando. Conferir os critérios de aceite (seção 9) no fim.

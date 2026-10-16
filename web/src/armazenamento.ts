@@ -1,6 +1,8 @@
-// Rascunho da nota em montagem no localStorage (6.1). Tudo em try/catch:
-// em aba anônima ou com storage bloqueado, o app segue sem rascunho.
+// O que o app guarda no localStorage: o rascunho da nota em montagem (6.1)
+// e o cache de produtos e config (7.3). Tudo em try/catch: em aba anônima
+// ou com storage bloqueado, o app segue funcionando, só sem guardar.
 
+import type { DadosIniciais } from './api/tipos';
 import { NOTA_VAZIA, type NotaEmMontagem } from './dominio/nota';
 import { TIPOS_VENDA } from './dominio/tipos';
 
@@ -40,4 +42,39 @@ function rascunhoValido(nota: NotaEmMontagem): boolean {
         (l.valorManual === null || Number.isInteger(l.valorManual)),
     )
   );
+}
+
+// ---- Cache de produtos e config (7.3) ----
+// O app abre na hora com o que veio da última vez e atualiza em segundo
+// plano. Sem internet, dá para montar nota com os preços guardados.
+
+const CHAVE_DADOS = 'leo-frutas:dados';
+
+export interface DadosGuardados {
+  dados: DadosIniciais;
+  /** ISO 8601 de quando veio do servidor. */
+  salvoEm: string;
+}
+
+export function lerDadosGuardados(): DadosGuardados | null {
+  try {
+    const salvo = localStorage.getItem(CHAVE_DADOS);
+    if (!salvo) return null;
+    const guardado = JSON.parse(salvo) as DadosGuardados;
+    const ok =
+      Array.isArray(guardado?.dados?.produtos) &&
+      typeof guardado.dados.config?.nome_loja === 'string' &&
+      typeof guardado.salvoEm === 'string';
+    return ok ? guardado : null;
+  } catch {
+    return null;
+  }
+}
+
+export function guardarDados(dados: DadosIniciais, agora = new Date()): void {
+  try {
+    localStorage.setItem(CHAVE_DADOS, JSON.stringify({ dados, salvoEm: agora.toISOString() }));
+  } catch {
+    // Sem storage: o app só não abre instantâneo da próxima vez.
+  }
 }

@@ -14,7 +14,7 @@ import { normalizarBusca } from '../web/src/dominio/formatacao';
 import { CLIENTE_MAX } from '../web/src/dominio/nota';
 import { calcularPainel, type Painel, type Periodo } from '../web/src/dominio/painel';
 import type { Nota, Produto } from '../web/src/dominio/tipos';
-import { proximoIdProduto, validarAlteracaoProduto, validarItens } from '../web/src/dominio/validacao';
+import { idEnvioValido, proximoIdProduto, validarAlteracaoProduto, validarItens } from '../web/src/dominio/validacao';
 import {
   ABA,
   acrescentar,
@@ -32,6 +32,8 @@ import {
 } from './planilha';
 
 const PERIODOS: Periodo[] = ['hoje', '7d', '30d', 'mes'];
+/** Quanto tempo o servidor lembra de um envio, para não duplicar nota (6 h, o máximo do CacheService). */
+const LEMBRAR_ENVIO_S = 6 * 60 * 60;
 const LIMITE_MAX = 200;
 
 /**
@@ -67,6 +69,12 @@ export function salvarNota(nota: NotaParaSalvar): NotaSalva {
   const cliente = String(nota.cliente ?? '').trim().slice(0, CLIENTE_MAX);
 
   return comTrava(() => {
+    // Mesmo envio de novo (a resposta anterior se perdeu): devolve a nota já gravada.
+    const cache = CacheService.getScriptCache();
+    const chaveEnvio = idEnvioValido(nota.id_envio) ? `envio:${nota.id_envio}` : null;
+    const repetido = chaveEnvio ? cache.get(chaveEnvio) : null;
+    if (repetido) return JSON.parse(repetido) as NotaSalva;
+
     const config = lerConfigBruta();
     const linhaProximo = config.get('proximo_numero');
     // Se alguém mexeu na planilha à mão, nunca reaproveita um número.
@@ -95,7 +103,9 @@ export function salvarNota(nota: NotaParaSalvar): NotaSalva {
     if (linhaProximo) atualizar(ABA.config, linhaProximo.linha, { valor: numero + 1 });
     else acrescentar(ABA.config, [{ chave: 'proximo_numero', valor: numero + 1 }]);
 
-    return { numero, data_hora: agora.toISOString(), total };
+    const resposta: NotaSalva = { numero, data_hora: agora.toISOString(), total };
+    if (chaveEnvio) cache.put(chaveEnvio, JSON.stringify(resposta), LEMBRAR_ENVIO_S);
+    return resposta;
   });
 }
 

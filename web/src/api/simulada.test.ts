@@ -113,3 +113,13 @@ describe('armazenamento', () => {
     expect((await b.salvarNota(await notaExemplo())).numero).toBe(2);
   });
 });
+
+describe('resposta perdida', () => {
+  it('a nota foi gravada mas o app não soube; tentar de novo não duplica', async () => {
+    const nota = { ...(await notaExemplo()), id_envio: 'envio-teste-0001' };
+    api.perderProximaResposta();
+    await expect(api.salvarNota(nota)).rejects.toThrow('Sem conexão');
+    expect((await api.salvarNota(nota)).numero).toBe(1);
+    expect((await api.listarNotas({ offset: 0, limite: 50 })).notas).toHaveLength(1);
+  });
+});

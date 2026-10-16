@@ -20,7 +20,15 @@ declare global {
 function criarApi(): Api {
   if (estaNoAppsScript()) return apiAppsScript;
   const simulada = new ApiSimulada({ chaveArmazenamento: 'leo-frutas:simulada' });
-  if (import.meta.env.DEV) window.__apiSimulada = simulada;
+  if (import.meta.env.DEV) {
+    window.__apiSimulada = simulada;
+    // Testes: abrir o app já "sem planilha" (para conferir o cache de produtos).
+    try {
+      if (sessionStorage.getItem('leo-frutas:simular-offline')) simulada.definirOffline(true);
+    } catch {
+      // sessionStorage bloqueado: ignora.
+    }
+  }
   return simulada;
 }
 

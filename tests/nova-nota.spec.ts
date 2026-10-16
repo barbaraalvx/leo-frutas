@@ -137,3 +137,52 @@ test.describe('tablet em pé / celular', () => {
     expect(largura).toBeLessThanOrEqual(390);
   });
 });
+
+test('resposta perdida no caminho: tentar de novo não duplica a nota', async ({ page }) => {
+  await cartao(page, 'Melancia').click();
+  await page.evaluate(() => window.__apiSimulada!.perderProximaResposta());
+  await page.getByRole('button', { name: 'Gerar nota' }).click();
+  await expect(page.getByRole('alert')).toContainText('Sem conexão');
+
+  await page.getByRole('button', { name: 'Tentar de novo' }).click();
+  await expect(page.getByText('Nota 0001 salva na planilha')).toBeVisible();
+  const notas = await page.evaluate(() => window.__apiSimulada!.listarNotas({ offset: 0, limite: 50 }));
+  expect(notas.notas).toHaveLength(1);
+});
+
+test('mudar a nota depois de um erro gera outro envio', async ({ page }) => {
+  await cartao(page, 'Melancia').click();
+  await page.evaluate(() => window.__apiSimulada!.perderProximaResposta());
+  await page.getByRole('button', { name: 'Gerar nota' }).click();
+  await expect(page.getByRole('alert')).toBeVisible();
+  // A primeira foi gravada; o vendedor acrescenta um item e gera de novo: é outra nota.
+  await cartao(page, 'Melancia').click();
+  await page.getByRole('button', { name: 'Gerar nota' }).click();
+  await expect(page.getByText('Nota 0002 salva na planilha')).toBeVisible();
+});
+
+test.describe('sem conexão', () => {
+  test('abre com os preços guardados quando a planilha não responde', async ({ page }) => {
+    // Primeira abertura (feita no beforeEach) guardou produtos e config.
+    await page.evaluate(() => sessionStorage.setItem('leo-frutas:simular-offline', '1'));
+    await page.reload();
+    await expect(cartao(page, 'Maçã verde')).toBeVisible();
+    await expect(page.getByRole('status').filter({ hasText: 'Planilha sem resposta' })).toContainText(
+      /Usando os preços guardados em \d{2}\/\d{2}\/\d{4} \d{2}:\d{2}/,
+    );
+
+    await page.evaluate(() => {
+      sessionStorage.removeItem('leo-frutas:simular-offline');
+      window.__apiSimulada!.definirOffline(false);
+    });
+    await page.getByRole('button', { name: 'Tentar de novo' }).click();
+    await expect(page.getByText('Planilha sem resposta')).toBeHidden();
+  });
+
+  test('sem internet no aparelho, avisa', async ({ page, context }) => {
+    await context.setOffline(true);
+    await expect(page.getByText('Sem internet. Dá para montar a nota')).toBeVisible();
+    await context.setOffline(false);
+    await expect(page.getByText('Sem internet.')).toBeHidden();
+  });
+});

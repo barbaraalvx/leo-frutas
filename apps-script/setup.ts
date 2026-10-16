@@ -5,6 +5,13 @@
 import { CONFIG_INICIAL, produtosIniciais } from '../web/src/api/dadosIniciais';
 import { ABA, CABECALHOS, acrescentar, lerLinhas, linhaDoProduto, planilha, type NomeAba } from './planilha';
 
+/**
+ * icones/icone-512.png no Drive de p4rkj13un@gmail.com, compartilhado com
+ * "qualquer pessoa com o link". Serve para qualquer planilha; se o arquivo
+ * sumir, o app só abre sem ícone.
+ */
+export const URL_ICONE_PADRAO = 'https://lh3.googleusercontent.com/d/1birY4HgVDlzOOiNpdF9STjHX5Ae7sDW7';
+
 const FORMATOS: Partial<Record<NomeAba, Record<string, string>>> = {
   Produtos: { preco: '#,##0.00', ordem: '0', atualizado_em: 'dd/MM/yyyy HH:mm' },
   Notas: { numero: '0000', data_hora: 'dd/MM/yyyy HH:mm', total: '#,##0.00', qtd_itens: '0' },
@@ -38,6 +45,8 @@ export function setup(): string {
   const faltando = [
     ...Object.entries(CONFIG_INICIAL).map(([chave, valor]) => ({ chave, valor })),
     { chave: 'proximo_numero', valor: maiorNota + 1 },
+    // Endereço público do ícone da aba (ver "Ícone" no CLAUDE.md); vazio = sem ícone.
+    { chave: 'url_icone', valor: URL_ICONE_PADRAO },
   ].filter((c) => !chaves.has(c.chave));
   if (faltando.length) {
     acrescentar(ABA.config, faltando);

@@ -5,6 +5,7 @@
 import { formatarNumeroNota } from '../web/src/dominio/formatacao';
 import { contaAtual, paginaSemAcesso, protegida, temAcesso } from './acesso';
 import * as api from './api';
+import { ABA, lerConfigBruta } from './planilha';
 import { setup } from './setup';
 
 export { setup };
@@ -41,9 +42,25 @@ export function doGet(e?: GoogleAppsScript.Events.DoGet): GoogleAppsScript.HTML.
     : script + conteudo;
 
   const titulo = view === 'nota' && numero ? `Nota ${formatarNumeroNota(Number(numero))} · Léo Frutas` : 'Léo Frutas';
-  return HtmlService.createHtmlOutput(html)
+  const saida = HtmlService.createHtmlOutput(html)
     .setTitle(titulo)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  aplicarIcone(saida);
+  return saida;
+}
+
+/**
+ * Ícone da aba e do atalho na tela inicial. O Apps Script só aceita um
+ * endereço público de imagem (chave url_icone da aba Config). Se o Google
+ * recusar o endereço, o app abre normalmente, só sem o ícone.
+ */
+function aplicarIcone(saida: GoogleAppsScript.HTML.HtmlOutput): void {
+  try {
+    const url = String(lerConfigBruta().get('url_icone')?.valores.valor ?? '').trim();
+    if (/^https:\/\/\S+$/.test(url)) saida.setFaviconUrl(url);
+  } catch (e) {
+    console.warn(`Ícone não aplicado (${ABA.config}!url_icone): ${e}`);
+  }
 }
 
 export function onOpen(): void {
