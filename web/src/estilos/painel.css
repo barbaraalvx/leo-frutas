@@ -1,0 +1,312 @@
+/* Painel (README "Painel de números"; especificação 6.6). */
+
+.painel__topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--esp-3);
+  min-height: var(--topo-altura);
+  padding: var(--esp-3) var(--esp-6);
+  /* O README permite o gradiente da marca no topo do painel. */
+  background: var(--gradiente-marca);
+}
+
+.painel__corpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-5);
+}
+
+.painel__conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-5);
+  transition: opacity 0.15s;
+}
+
+.painel__conteudo--carregando {
+  opacity: 0.5;
+}
+
+/* ---- Indicadores ---- */
+
+.indicadores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--esp-5);
+}
+
+.indicador {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-1);
+  min-width: 0;
+  padding: var(--esp-5);
+}
+
+.indicador__rotulo {
+  color: var(--tinta-500);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-medio);
+}
+
+/* Número grande com algarismos proporcionais (tabular deixa "121" frouxo). */
+.indicador__valor {
+  color: var(--tinta-900);
+  font-family: var(--fonte-titulo);
+  font-size: var(--texto-2xl);
+  font-weight: var(--peso-extra);
+  line-height: 1.15;
+  /* "R$" nunca se separa do número. */
+  white-space: nowrap;
+}
+
+.indicador__valor--texto {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: var(--texto-xl);
+}
+
+.indicador__delta,
+.indicador__detalhe {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-1);
+  color: var(--tinta-500);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-medio);
+}
+
+.indicador__delta--alta {
+  color: var(--verde-700);
+}
+
+.indicador__delta--queda {
+  color: var(--erro);
+}
+
+/* ---- Seções ---- */
+
+.painel__secao {
+  padding: var(--esp-5);
+}
+
+.painel__subtitulo {
+  margin-bottom: var(--esp-4);
+  font-size: var(--texto-lg);
+  font-weight: var(--peso-semi);
+}
+
+/* ---- Gráfico ---- */
+
+.grafico__area {
+  position: relative;
+  min-height: 220px;
+}
+
+.grafico svg {
+  display: block;
+  overflow: visible;
+}
+
+.grafico__grade {
+  stroke: var(--borda);
+  stroke-width: 1;
+}
+
+.grafico__base {
+  stroke: var(--tinta-300);
+  stroke-width: 1;
+}
+
+.grafico__eixo {
+  fill: var(--tinta-500);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.grafico__valor {
+  fill: var(--tinta-900);
+  font-size: 12px;
+  font-weight: var(--peso-semi);
+  font-variant-numeric: tabular-nums;
+}
+
+.grafico__barra {
+  fill: var(--laranja-500);
+  transition: fill 0.1s;
+}
+
+.grafico__barra--contexto {
+  fill: var(--tinta-300);
+}
+
+.grafico__barra--ativa {
+  fill: var(--laranja-400);
+}
+
+.grafico__barra--contexto.grafico__barra--ativa {
+  fill: var(--tinta-400);
+}
+
+.grafico__alvo {
+  fill: transparent;
+  cursor: default;
+  outline: none;
+}
+
+.grafico__alvo:focus-visible {
+  stroke: var(--laranja-500);
+  stroke-width: 2;
+}
+
+.grafico__dica {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--esp-2) var(--esp-3);
+  border-radius: var(--raio-sm);
+  background: var(--tinta-900);
+  color: var(--branco);
+  font-size: var(--texto-sm);
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+}
+
+.grafico__dica strong {
+  font-size: var(--texto-md);
+}
+
+.grafico__dica span {
+  color: var(--tinta-300);
+}
+
+.grafico__vazio {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  color: var(--tinta-400);
+  pointer-events: none;
+}
+
+.grafico__legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--esp-2) var(--esp-5);
+  margin-top: var(--esp-3);
+  color: var(--tinta-500);
+  font-size: var(--texto-sm);
+}
+
+.grafico__legenda > span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-2);
+}
+
+.grafico__amostra {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--laranja-500);
+}
+
+.grafico__amostra--contexto {
+  background: var(--tinta-300);
+}
+
+.grafico__tabela {
+  margin-top: var(--esp-3);
+  font-size: var(--texto-sm);
+}
+
+.grafico__tabela summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alvo-toque);
+  color: var(--laranja-700);
+  font-weight: var(--peso-medio);
+  cursor: pointer;
+}
+
+.grafico__tabela table,
+.top-produtos {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.grafico__tabela th,
+.grafico__tabela td,
+.top-produtos th,
+.top-produtos td {
+  padding: var(--esp-2) var(--esp-2) var(--esp-2) 0;
+  border-bottom: 1px solid var(--divisor);
+  text-align: left;
+}
+
+.grafico__tabela th,
+.top-produtos th {
+  color: var(--tinta-500);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-medio);
+}
+
+.tabela__num {
+  text-align: right !important;
+  white-space: nowrap;
+}
+
+/* ---- Top produtos ---- */
+
+.top-produtos tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.top-produtos__posicao {
+  width: 32px;
+  color: var(--tinta-400);
+}
+
+.top-produtos__nome {
+  color: var(--tinta-900);
+  font-weight: var(--peso-medio);
+}
+
+.top-produtos__valor {
+  color: var(--tinta-900);
+  font-weight: var(--peso-forte);
+}
+
+@media (max-width: 1023px) {
+  .painel__topo {
+    padding-left: var(--esp-4);
+    padding-right: var(--esp-4);
+  }
+
+  .indicadores {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--esp-3);
+  }
+
+  .indicador__valor {
+    font-size: var(--texto-xl);
+  }
+}
+
+/* Celular: Vendas (o número principal) e Mais vendido (nome longo) ocupam a
+   linha inteira; Notas e Ticket médio dividem a do meio. */
+@media (max-width: 480px) {
+  .indicador:first-child,
+  .indicador:last-child {
+    grid-column: 1 / -1;
+  }
+}

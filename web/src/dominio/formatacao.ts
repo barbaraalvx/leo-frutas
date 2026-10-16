@@ -95,3 +95,17 @@ export function formatarDataHora(data: Date | string): string {
 export function normalizarBusca(texto: string): string {
   return texto.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
 }
+
+/** Para eixo de gráfico: "R$ 0", "R$ 250", "R$ 1,2 mil", "R$ 15 mil". */
+export function formatarDinheiroCompacto(centavos: number): string {
+  const reais = Math.round(centavos / 100);
+  if (reais < 1000) return `R$ ${reais}`;
+  const mil = reais / 1000;
+  const texto = mil < 10 ? mil.toFixed(1).replace('.', ',').replace(',0', '') : String(Math.round(mil));
+  return `R$ ${texto} mil`;
+}
+
+/** "2026-10-16" → "16/10" */
+export function formatarDiaCurto(dia: string): string {
+  return `${dia.slice(8, 10)}/${dia.slice(5, 7)}`;
+}

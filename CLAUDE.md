@@ -80,9 +80,10 @@ web/
                     (usadas pelo app E pelo servidor: o servidor importa de web/src/dominio)
     api/            contrato (tipos.ts), simulada.ts, appsScript.ts (google.script.run), index.ts escolhe
     telas/          NovaNota, Notas, Precos, Painel
-    componentes/    Menu, CartaoProduto, LinhaNota, NotaImpressa, Dialogo, FormularioProduto, Interruptor…
+    componentes/    Menu, CartaoProduto, LinhaNota, NotaImpressa, Dialogo, FormularioProduto, Interruptor,
+                    GraficoVendas (SVG próprio, sem biblioteca)…
     estilos/        global.css (importa design-system/tokens.css)
-tests/              Playwright: nota de exemplo, Nova nota, impressão, preços, notas, producao
+tests/              Playwright: nota de exemplo, Nova nota, impressão, preços, notas, painel, producao
 ```
 
 ## Regras que não podem quebrar
@@ -108,6 +109,7 @@ tests/              Playwright: nota de exemplo, Nova nota, impressão, preços,
 - **CSS:** `global.css` é importado primeiro em `main.tsx` e tem o que é compartilhado (botões, campos, busca, abas, selos, diálogo, interruptor); o CSS de cada tela vem depois e pode sobrescrever. Sem `window.confirm`/`alert`: confirmações usam `Dialogo`.
 - **Produtos** vivem no `App` (carregados uma vez); a tela Preços devolve a lista nova depois de salvar e a Nova nota já vê. Na tela Preços, preço/ativo/ordem ficam pendentes até "Salvar preços"; o formulário (novo/editar) salva na hora. Sair da tela com pendências pede confirmação (`App`) e fechar a aba dispara o aviso do navegador.
 - **Notas:** busca espera 300 ms parada; respostas fora de ordem são descartadas; 50 por página.
+- **Painel:** números vêm prontos de `getPainel` (servidor usa `calcularPainel`). Barras em `--laranja-500`, hover `--laranja-400` (o README pede `--laranja-400` nas barras, mas ele reprova no validador de paleta: claro demais, 2,0:1 sobre branco). Dias fora do período em `--tinta-300` como contexto, com legenda. Valor direto só sobre "hoje" e só se couber (faixa ≥ 56 px); todos os valores na dica (hover/foco) e em "Ver em tabela". Números grandes sem `tabular-nums` e sem quebrar linha.
 - **Breakpoint único de 1023 px:** abaixo dele o menu vira barra inferior e a nota vira gaveta.
 - Playwright fixado em 1.63.0 (o 1.64.1 não resolvia no registro em 16/10/2026). Roda com 2 workers e `expect` de 10 s: mais que isso estoura a memória da máquina da Bárbara.
 - Nos testes, radios do formulário são marcados por papel (`getByRole('radio').check()`): o input invisível fica por cima do rótulo para aumentar a área de toque.
@@ -118,7 +120,7 @@ tests/              Playwright: nota de exemplo, Nova nota, impressão, preços,
 2. ✅ Nova nota (6.1, com rascunho no `localStorage`), pré-visualização (6.2) e nota A4 (6.5); Playwright com a nota de exemplo (R$ 178,40) e PDF.
 3. ✅ Apps Script + planilha: `setup()`, API, `doGet` com `?view=nota&numero=N`, `npm run publicar`. Publicado e testado pela Bárbara na planilha de teste. **Falta:** mudar para a planilha do Léo (ver "Acesso e publicação").
 4. ✅ Preços (6.4) e Notas (6.3), com cancelamento e reimpressão.
-5. Painel (6.6). A conta já existe em `dominio/painel.ts` para o servidor reaproveitar.
+5. ✅ Painel (6.6): indicadores com variação, gráfico de vendas por dia, top 10.
 6. Acabamento: rascunho e cache no `localStorage`, erros, ícone, instruções de balcão.
 
 Cada fase termina com `npm test` e `npm run typecheck` passando. Conferir os critérios de aceite (seção 9) no fim.

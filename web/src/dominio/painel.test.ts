@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calcularPainel, diaLocal, intervaloDoPeriodo } from './painel';
+import { calcularPainel, diaLocal, intervaloDoPeriodo, marcasDoEixo, rotuloComparacao, variacao } from './painel';
 import type { Nota } from './tipos';
 
 const AGORA = new Date('2026-10-16T15:00:00Z'); // 12:00 em João Pessoa
@@ -69,5 +69,37 @@ describe('calcularPainel', () => {
     const p = calcularPainel([], '30d', AGORA);
     expect(p.atual).toEqual({ vendas: 0, notas: 0, ticketMedio: 0 });
     expect(p.maisVendido).toBeNull();
+  });
+});
+
+describe('apresentação', () => {
+  it('variação percentual arredondada', () => {
+    expect(variacao(15000, 10000)).toEqual({ tipo: 'percentual', valor: 50 });
+    expect(variacao(5000, 10000)).toEqual({ tipo: 'percentual', valor: -50 });
+    expect(variacao(10001, 10000)).toEqual({ tipo: 'percentual', valor: 0 });
+  });
+
+  it('sem base de comparação', () => {
+    expect(variacao(5000, 0)).toEqual({ tipo: 'sem-base' });
+    expect(variacao(0, 0)).toBeNull();
+  });
+
+  it('rótulo da comparação', () => {
+    expect(rotuloComparacao('hoje', '2026-10-16')).toBe('vs ontem');
+    expect(rotuloComparacao('7d', '2026-10-16')).toBe('vs 7 dias anteriores');
+    expect(rotuloComparacao('mes', '2026-10-16')).toBe('vs 16 dias anteriores');
+    expect(rotuloComparacao('mes', '2026-10-01')).toBe('vs ontem');
+  });
+});
+
+describe('marcasDoEixo', () => {
+  it('passos redondos que cobrem o máximo', () => {
+    expect(marcasDoEixo(17840)).toEqual([0, 5000, 10000, 15000, 20000]);
+    expect(marcasDoEixo(250000)).toEqual([0, 100000, 200000, 300000]);
+    expect(marcasDoEixo(93000)).toEqual([0, 25000, 50000, 75000, 100000]);
+  });
+
+  it('sem vendas, ainda desenha um eixo', () => {
+    expect(marcasDoEixo(0)).toEqual([0, 25, 50, 75, 100]);
   });
 });

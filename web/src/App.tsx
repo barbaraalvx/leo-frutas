@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api, type DadosIniciais } from './api';
 import { Dialogo } from './componentes/Dialogo';
-import { EmConstrucao } from './componentes/EmConstrucao';
 import { Menu, type IdTela } from './componentes/Menu';
 import type { Produto } from './dominio/tipos';
 import { Notas } from './telas/Notas';
 import { NovaNota } from './telas/NovaNota';
+import { Painel } from './telas/Painel';
 import { Precos } from './telas/Precos';
 
 export function App() {
@@ -52,7 +52,7 @@ export function App() {
             aoMudarPendencias={setPendenciasPrecos}
           />
         )}
-        {tela === 'painel' && <EmConstrucao titulo="Painel" fase={5} />}
+        {tela === 'painel' && <Painel />}
       </main>
 
       {destinoPendente && (

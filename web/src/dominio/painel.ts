@@ -139,3 +139,48 @@ function somarProdutos(notas: Nota[]): ProdutoVendido[] {
   }
   return [...mapa.values()].sort((a, b) => b.valor - a.valor);
 }
+
+// ---- Apresentação do painel ----
+
+export const ROTULOS_PERIODO: Record<Periodo, string> = {
+  hoje: 'Hoje',
+  '7d': '7 dias',
+  '30d': '30 dias',
+  mes: 'Este mês',
+};
+
+export type Variacao =
+  | { tipo: 'percentual'; valor: number }
+  /** Havia zero no período anterior: percentual não faz sentido. */
+  | { tipo: 'sem-base' }
+  | null;
+
+/** Variação contra o período anterior; null quando os dois são zero. */
+export function variacao(atual: number, anterior: number): Variacao {
+  if (anterior === 0) return atual === 0 ? null : { tipo: 'sem-base' };
+  return { tipo: 'percentual', valor: Math.round(((atual - anterior) / anterior) * 100) };
+}
+
+/** "vs ontem", "vs 7 dias anteriores"… (o mês compara com os mesmos N dias antes). */
+export function rotuloComparacao(periodo: Periodo, hoje: string): string {
+  if (periodo === 'hoje') return 'vs ontem';
+  if (periodo === '7d') return 'vs 7 dias anteriores';
+  if (periodo === '30d') return 'vs 30 dias anteriores';
+  const dias = Number(hoje.slice(8, 10));
+  return dias === 1 ? 'vs ontem' : `vs ${dias} dias anteriores`;
+}
+
+/**
+ * Marcas "redondas" do eixo de valores (passos de 1, 2, 2,5 ou 5 × 10ⁿ reais),
+ * com umas 4 linhas. Devolve as marcas em centavos, de 0 até o topo.
+ */
+export function marcasDoEixo(maximoCentavos: number, linhas = 4): number[] {
+  const maximo = Math.max(maximoCentavos / 100, 1);
+  const bruto = maximo / linhas;
+  const potencia = 10 ** Math.floor(Math.log10(bruto));
+  const passo = [1, 2, 2.5, 5, 10].map((m) => m * potencia).find((p) => p >= bruto)!;
+  const topo = Math.ceil(maximo / passo) * passo;
+  const marcas: number[] = [];
+  for (let v = 0; v <= topo + passo / 2; v += passo) marcas.push(Math.round(v * 100));
+  return marcas;
+}

@@ -3,6 +3,8 @@ import {
   formatarCentavosCampo,
   formatarDataHora,
   formatarDinheiro,
+  formatarDinheiroCompacto,
+  formatarDiaCurto,
   formatarNumeroNota,
   formatarPeso,
   formatarQuantidade,
@@ -104,5 +106,19 @@ describe('busca', () => {
   it('sem acento e sem maiúsculas', () => {
     expect(normalizarBusca('Maçã Verde')).toBe('maca verde');
     expect(normalizarBusca('Maracujá')).toContain(normalizarBusca('MARACUJA'));
+  });
+});
+
+describe('gráfico', () => {
+  it('dinheiro compacto para o eixo', () => {
+    expect(formatarDinheiroCompacto(0)).toBe('R$ 0');
+    expect(formatarDinheiroCompacto(25000)).toBe('R$ 250');
+    expect(formatarDinheiroCompacto(100000)).toBe('R$ 1 mil');
+    expect(formatarDinheiroCompacto(120000)).toBe('R$ 1,2 mil');
+    expect(formatarDinheiroCompacto(1500000)).toBe('R$ 15 mil');
+  });
+
+  it('dia curto', () => {
+    expect(formatarDiaCurto('2026-10-06')).toBe('06/10');
   });
 });
